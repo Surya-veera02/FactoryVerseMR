@@ -15,6 +15,46 @@ public class ConveyorModule : MonoBehaviour
 
     public int QuarterTurns => quarterTurns;
 
+
+    public Vector2Int OutputDirection
+    {
+        get
+        {
+            switch (quarterTurns)
+            {
+                case 0: return Vector2Int.up;
+                case 1: return Vector2Int.right;
+                case 2: return Vector2Int.down;
+                default: return Vector2Int.left;
+            }
+        }
+    }
+
+    public Vector2Int InputDirection => -OutputDirection;
+
+    public Vector2Int? OutputCell
+    {
+        get
+        {
+            if (!CurrentCell.HasValue)
+                return null;
+
+            return CurrentCell.Value + OutputDirection;
+        }
+    }
+
+    public Vector2Int? InputCell
+    {
+        get
+        {
+            if (!CurrentCell.HasValue)
+                return null;
+
+            return CurrentCell.Value + InputDirection;
+        }
+    }
+
+
     internal void SetCell(Vector2Int cell)
     {
         CurrentCell = cell;
@@ -77,8 +117,11 @@ public class ConveyorModule : MonoBehaviour
             return;
 
         quarterTurns = (quarterTurns + 1) % 4;
-
         placementManager.AlignModule(this);
+
+        // Refresh logical connections after rotation.
+        GetComponentInParent<ConveyorConnectionManager>()
+            ?.RebuildConnections();
     }
 
 

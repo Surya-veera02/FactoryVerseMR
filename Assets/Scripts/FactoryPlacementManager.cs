@@ -7,6 +7,8 @@ public class FactoryPlacementManager : MonoBehaviour
     [Header("Grid Reference")]
     [SerializeField] private FactoryGrid grid;
 
+    private ConveyorConnectionManager connectionManager;
+
     private readonly Dictionary<Vector2Int, ConveyorModule> occupiedCells
         = new Dictionary<Vector2Int, ConveyorModule>();
 
@@ -14,6 +16,9 @@ public class FactoryPlacementManager : MonoBehaviour
     {
         if (grid == null)
             grid = GetComponent<FactoryGrid>();
+
+        connectionManager =
+        GetComponent<ConveyorConnectionManager>();
     }
 
     public bool TrySnap(ConveyorModule module, Vector3 worldPosition)
@@ -58,6 +63,9 @@ public class FactoryPlacementManager : MonoBehaviour
         module.SetCell(targetCell);
 
         AlignModule(module);
+
+        if (connectionManager != null)
+            connectionManager.RebuildConnections();
 
         Debug.Log(
             $"{module.name} snapped to ({column}, {row})"
@@ -105,5 +113,21 @@ public class FactoryPlacementManager : MonoBehaviour
         {
             occupiedCells.Remove(cell);
         }
+        if (connectionManager != null)
+            connectionManager.RebuildConnections();
     }
+
+    public ConveyorModule GetModuleAtCell(Vector2Int cell)
+    {
+        if (occupiedCells.TryGetValue(
+            cell,
+            out ConveyorModule module))
+        {
+            if (module != null && module.isActiveAndEnabled)
+                return module;
+        }
+
+        return null;
+    }
+
 }
