@@ -12,6 +12,9 @@ public class FactoryShippingStation : MonoBehaviour
     public int DeliveredCount => deliveredCount;
     public bool ObjectiveCompleted => objectiveCompleted;
 
+    //public int DeliveredCount => deliveredCount;
+    public int TargetDeliveries => targetDeliveries;
+
 
     public void ReceiveProduct(GameObject product)
     {
