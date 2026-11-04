@@ -120,6 +120,12 @@ public class FactorySourceStation : MonoBehaviour
         Debug.Log("[Source] Production stopped.");
     }
 
+    public void ResetProduction()
+    {
+        StopProduction();
+        productsSpawned = 0;
+    }
+
     public bool HasProductsRemaining()
     {
         return productsSpawned < maxProducts;

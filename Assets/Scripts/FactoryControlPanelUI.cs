@@ -17,6 +17,9 @@ public class FactoryControlPanelUI : MonoBehaviour
     [SerializeField] private Button startButton;
     [SerializeField] private Button stopButton;
 
+    [SerializeField] private Button clearLineButton;
+    [SerializeField] private Button resetButton;
+
     private void Awake()
     {
         if (startButton != null)
@@ -24,6 +27,12 @@ public class FactoryControlPanelUI : MonoBehaviour
 
         if (stopButton != null)
             stopButton.onClick.AddListener(OnStopPressed);
+
+        if (clearLineButton != null)
+            clearLineButton.onClick.AddListener(controller.ClearLine);
+
+        if (resetButton != null)
+            resetButton.onClick.AddListener(controller.ResetFactory);
     }
 
     private void Update()
@@ -83,5 +92,11 @@ public class FactoryControlPanelUI : MonoBehaviour
 
         if (stopButton != null)
             stopButton.onClick.RemoveListener(OnStopPressed);
+
+        if (clearLineButton != null)
+            clearLineButton.onClick.RemoveListener(controller.ClearLine);
+
+        if (resetButton != null)
+            resetButton.onClick.RemoveListener(controller.ResetFactory);
     }
 }

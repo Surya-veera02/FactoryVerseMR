@@ -47,4 +47,10 @@ public class FactoryShippingStation : MonoBehaviour
         }
     }
 
+    public void ResetShipping()
+    {
+        deliveredCount = 0;
+        objectiveCompleted = false;
+    }
+
 }

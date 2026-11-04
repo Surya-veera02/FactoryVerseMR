@@ -213,4 +213,57 @@ public class FactoryProductionController : MonoBehaviour
         );
     }
 
+    [ContextMenu("Clear Line")]
+    public void ClearLine()
+    {
+        if (currentState == ProductionState.Running)
+        {
+            Debug.LogWarning(
+                "[Factory] Stop production before clearing the line."
+            );
+            return;
+        }
+
+        ProductMover[] products =
+            GetComponentsInChildren<ProductMover>(true);
+
+        foreach (ProductMover product in products)
+        {
+            if (product == null)
+                continue;
+
+            product.UnregisterProduct();
+            Destroy(product.gameObject);
+        }
+
+        Debug.Log("[Factory] Line cleared.");
+    }
+
+    [ContextMenu("Reset Factory")]
+    public void ResetFactory()
+    {
+        source.StopProduction();
+
+        ProductMover[] products =
+            GetComponentsInChildren<ProductMover>(true);
+
+        foreach (ProductMover product in products)
+        {
+            if (product == null)
+                continue;
+
+            product.UnregisterProduct();
+            Destroy(product.gameObject);
+        }
+
+        source.ResetProduction();
+        shipping.ResetShipping();
+
+        SetConveyorsLocked(false);
+
+        currentState = ProductionState.Stopped;
+
+        Debug.Log("[Factory] Factory reset. Ready for a new round.");
+    }
+
 }
