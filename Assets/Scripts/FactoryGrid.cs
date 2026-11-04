@@ -17,9 +17,17 @@ public class FactoryGrid : MonoBehaviour
     public int Columns => columns;
     public int Rows => rows;
 
+    public float BoardTopY => boardTopY;
+
+    [Header("Debug")]
+    [SerializeField] private bool showGridVisuals = true;
+
     private void Awake()
     {
-        CreateGridVisuals();
+        if (showGridVisuals)
+        {
+            CreateGridVisuals();
+        }
     }
 
     private void CreateGridVisuals()
