@@ -13,12 +13,15 @@ public class FactorySourceStation : MonoBehaviour
     [Header("Production")]
     [SerializeField] private float spawnInterval = 2.5f;
     [SerializeField] private int maxProducts = 10;
-    [SerializeField] private bool autoStart = true;
+    [SerializeField] private bool autoStart = false;
 
     private int productsSpawned;
     private Coroutine productionRoutine;
 
     public int ProductsSpawned => productsSpawned;
+
+    public bool IsProducing => productionRoutine != null;
+    public int MaxProducts => maxProducts;
 
     private void Awake()
     {
@@ -103,4 +106,23 @@ public class FactorySourceStation : MonoBehaviour
 
         Debug.Log("[Source] Production completed.");
     }
+
+
+    [ContextMenu("Stop Production")]
+    public void StopProduction()
+    {
+        if (productionRoutine == null)
+            return;
+
+        StopCoroutine(productionRoutine);
+        productionRoutine = null;
+
+        Debug.Log("[Source] Production stopped.");
+    }
+
+    public bool HasProductsRemaining()
+    {
+        return productsSpawned < maxProducts;
+    }
+
 }

@@ -1615,7 +1615,7 @@ MonoBehaviour:
   connectionManager: {fileID: 1969260296}
   spawnInterval: 2.5
   maxProducts: 10
-  autoStart: 1
+  autoStart: 0
 --- !u!1 &1059658040
 GameObject:
   m_ObjectHideFlags: 0
@@ -3521,6 +3521,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1969260292}
+  - component: {fileID: 1969260298}
   - component: {fileID: 1969260297}
   - component: {fileID: 1969260293}
   - component: {fileID: 1969260296}
@@ -3629,6 +3630,22 @@ MonoBehaviour:
   startingConveyor: {fileID: 1015874329}
   grid: {fileID: 1969260294}
   connectionManager: {fileID: 1969260296}
+--- !u!114 &1969260298
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1969260291}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d82ede0d06be69242afb1f789464ade3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FactoryProductionController
+  source: {fileID: 1015874334}
+  shipping: {fileID: 630522927}
+  connections: {fileID: 1969260296}
+  currentState: 0
 --- !u!224 &2001866392 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4941219564456579801, guid: dc067c577ec1b854684d789b6e727cc0, type: 3}

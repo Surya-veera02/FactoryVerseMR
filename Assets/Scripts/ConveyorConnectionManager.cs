@@ -89,4 +89,41 @@ public class ConveyorConnectionManager : MonoBehaviour
             ? next
             : null;
     }
+
+
+    public bool HasValidRoute(
+        ConveyorModule source,
+        ConveyorModule destination)
+    {
+        if (source == null || destination == null)
+            return false;
+
+        // Use the latest conveyor placement information.
+        RebuildConnections();
+
+        HashSet<ConveyorModule> visited = new();
+
+        ConveyorModule current = source;
+
+        while (current != null)
+        {
+            // Prevent infinite loops.
+            if (!visited.Add(current))
+            {
+                Debug.LogWarning(
+                    "[Factory Connection] Route contains a loop."
+                );
+                return false;
+            }
+
+            if (current == destination)
+                return true;
+
+            current = GetNextModule(current);
+        }
+
+        return false;
+    }
+
+
 }
