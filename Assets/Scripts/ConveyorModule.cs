@@ -81,6 +81,50 @@ public class ConveyorModule : MonoBehaviour
         placementManager.AlignModule(this);
     }
 
+
+    public void SetQuarterTurnsFromWorldRotation(
+        Quaternion worldRotation)
+    {
+        if (placementManager == null)
+            return;
+
+        // Convert the rotation into the board's local space.
+        Quaternion localRotation =
+            Quaternion.Inverse(placementManager.transform.rotation)
+            * worldRotation;
+
+        Vector3 forward = localRotation * Vector3.forward;
+
+        float angle;
+
+        // Handle cases where the conveyor is tilted vertically.
+        if (new Vector2(forward.x, forward.z).sqrMagnitude < 0.001f)
+        {
+            Vector3 right = localRotation * Vector3.right;
+
+            angle = Mathf.Atan2(
+                -right.z,
+                right.x
+            ) * Mathf.Rad2Deg;
+        }
+        else
+        {
+            angle = Mathf.Atan2(
+                forward.x,
+                forward.z
+            ) * Mathf.Rad2Deg;
+        }
+
+        // Snap the angle to 0, 90, 180 or 270 degrees.
+        quarterTurns =
+            ((Mathf.RoundToInt(angle / 90f) % 4) + 4) % 4;
+
+        Debug.Log(
+            $"{name} rotation snapped to {quarterTurns * 90} degrees"
+        );
+    }
+
+
     private void OnDestroy()
     {
         if (placementManager != null)

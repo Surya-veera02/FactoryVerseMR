@@ -17,6 +17,8 @@ public class ConveyorGrabSnap : MonoBehaviour
     private Transform handAttach;
     private Vector3 grabOffset;
 
+    private Quaternion grabRotationOffset;
+
     private bool isGrabbed;
     private Coroutine snapCoroutine;
 
@@ -73,38 +75,44 @@ public class ConveyorGrabSnap : MonoBehaviour
 
         grabOffset = transform.position - handAttach.position;
 
+        // Preserve the initial hand-to-object rotation.
+        grabRotationOffset =
+            Quaternion.Inverse(handAttach.rotation)
+            * transform.rotation;
+
         isGrabbed = true;
     }
+
 
     private void LateUpdate()
     {
         if (!isGrabbed || handAttach == null || grid == null)
             return;
 
-        Vector3 targetWorld = handAttach.position + grabOffset;
+        // Calculate the desired position based on hand movement.
+        Vector3 targetWorld =
+            handAttach.position + grabOffset;
 
+        // Convert the hand position to board-local coordinates.
         Vector3 localPosition =
             grid.transform.InverseTransformPoint(targetWorld);
 
-        // Allow the player to lift the conveyor above the board,
-        // but prevent it from moving underneath the board.
+        // Allow lifting above the board, but not below it.
         localPosition.y = Mathf.Clamp(
             localPosition.y,
             grid.BoardTopY,
             grid.BoardTopY + maxLiftHeight
         );
 
+        // FIX: Actually move the conveyor!
         transform.position =
             grid.transform.TransformPoint(localPosition);
 
+        // Follow the hand's rotation freely.
         transform.rotation =
-            grid.transform.rotation *
-            Quaternion.Euler(
-                0f,
-                conveyorModule.QuarterTurns * 90f,
-                0f
-            );
+            handAttach.rotation * grabRotationOffset;
     }
+
 
     private void OnGrabReleased(SelectExitEventArgs args)
     {
@@ -116,15 +124,19 @@ public class ConveyorGrabSnap : MonoBehaviour
 
         // Remember exactly where the player released it.
         Vector3 releasePosition = transform.position;
+        Quaternion releaseRotation = transform.rotation;
 
         snapCoroutine = StartCoroutine(
-            SnapAfterRelease(releasePosition)
+            SnapAfterRelease(releasePosition, releaseRotation)
         );
     }
 
-    private IEnumerator SnapAfterRelease(Vector3 releasePosition)
+
+    private IEnumerator SnapAfterRelease(
+        Vector3 releasePosition,
+        Quaternion releaseRotation)
     {
-        // Allow XR and physics release processing to finish.
+        // Wait until XR release and physics processing finish.
         yield return new WaitForFixedUpdate();
         yield return new WaitForEndOfFrame();
 
@@ -134,21 +146,29 @@ public class ConveyorGrabSnap : MonoBehaviour
             yield break;
         }
 
-        // Restore the intended release position before
-        // calculating the nearest grid cell.
-        transform.position = releasePosition;
+        // Restore the exact pose at the moment of release.
+        transform.SetPositionAndRotation(
+            releasePosition,
+            releaseRotation
+        );
 
-        // Use our existing snapping and occupancy logic.
+        // Determine the nearest 90-degree orientation.
+        conveyorModule.SetQuarterTurnsFromWorldRotation(
+            releaseRotation
+        );
+
+        // Snap position and apply the grid-aligned rotation.
         conveyorModule.SnapToNearestCell();
 
-        // Synchronize the Rigidbody with the snapped pose.
+        // Synchronize Rigidbody with the final snapped pose.
         rb.position = transform.position;
         rb.rotation = transform.rotation;
 
         Debug.Log(
-            $"{name} final snapped position: {transform.position}"
+            $"{name} snapped at {transform.position}"
         );
 
         snapCoroutine = null;
     }
+
 }
