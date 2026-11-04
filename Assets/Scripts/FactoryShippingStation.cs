@@ -12,10 +12,16 @@ public class FactoryShippingStation : MonoBehaviour
     public int DeliveredCount => deliveredCount;
     public bool ObjectiveCompleted => objectiveCompleted;
 
+
     public void ReceiveProduct(GameObject product)
     {
         if (product == null)
             return;
+
+        ProductMover mover = product.GetComponent<ProductMover>();
+
+        if (mover != null)
+            mover.UnregisterProduct();
 
         deliveredCount++;
 
@@ -37,4 +43,5 @@ public class FactoryShippingStation : MonoBehaviour
             );
         }
     }
+
 }

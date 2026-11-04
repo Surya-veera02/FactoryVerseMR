@@ -9,6 +9,7 @@ public class FactoryProductionController : MonoBehaviour
     {
         Ready,
         Running,
+        Stopping,
         Stopped,
         InvalidRoute,
         Completed
@@ -79,35 +80,57 @@ public class FactoryProductionController : MonoBehaviour
         return valid;
     }
 
+
     [ContextMenu("Start Factory")]
     public void StartFactory()
     {
         if (!Application.isPlaying)
             return;
 
-        if (currentState == ProductionState.Completed)
+        if (currentState == ProductionState.Running ||
+            currentState == ProductionState.Stopping ||
+            currentState == ProductionState.Completed)
+            return;
+
+        if (source == null || !source.HasProductsRemaining())
         {
-            Debug.Log("[Factory] Objective already completed.");
+            Debug.LogWarning(
+                "[Factory] No products remaining to spawn."
+            );
             return;
         }
 
-        if (!source.HasProductsRemaining())
+        Debug.Log(
+            $"[Factory] Restart check: " +
+            $"State={currentState}, " +
+            $"ActiveProducts={ProductMover.ActiveProductCount}, " +
+            $"Spawned={source.ProductsSpawned}, " +
+            $"Delivered={shipping.DeliveredCount}"
+        );
+
+        if (ProductMover.ActiveProductCount > 0)
         {
-            Debug.Log("[Factory] No products remaining.");
+            Debug.LogWarning(
+                "[Factory] Clear existing products before restarting."
+            );
             return;
         }
+
+        Debug.Log($"[Factory] Active products: {ProductMover.ActiveProductCount}");
 
         if (!ValidateRoute())
             return;
 
-        source.StartProduction();
-
         SetConveyorsLocked(true);
+
+        source.StartProduction();
 
         currentState = ProductionState.Running;
 
         Debug.Log("[Factory] Production started.");
     }
+
+
 
     [ContextMenu("Stop Factory")]
     public void StopFactory()
@@ -115,20 +138,27 @@ public class FactoryProductionController : MonoBehaviour
         if (!Application.isPlaying)
             return;
 
+        if (currentState != ProductionState.Running)
+            return;
+
         source.StopProduction();
 
-        SetConveyorsLocked(false);
+        currentState = ProductionState.Stopping;
 
-        currentState = ProductionState.Stopped;
-
-        Debug.Log("[Factory] Production stopped.");
+        Debug.Log(
+            "[Factory] Stopping production. " +
+            "Waiting for active products to finish."
+        );
     }
+
+
 
     private void Update()
     {
         if (shipping == null)
             return;
 
+        // Check whether the delivery objective is complete.
         if (shipping.ObjectiveCompleted &&
             currentState != ProductionState.Completed)
         {
@@ -136,8 +166,25 @@ public class FactoryProductionController : MonoBehaviour
 
             currentState = ProductionState.Completed;
 
+            SetConveyorsLocked(false);
+
             Debug.Log(
                 "[Factory] Production objective completed!"
+            );
+
+            return;
+        }
+
+        // Finish a graceful stop once all products have left.
+        if (currentState == ProductionState.Stopping &&
+            ProductMover.ActiveProductCount == 0)
+        {
+            currentState = ProductionState.Stopped;
+
+            SetConveyorsLocked(false);
+
+            Debug.Log(
+                "[Factory] Line empty. Build mode enabled."
             );
         }
     }

@@ -15,6 +15,17 @@ public class ProductMover : MonoBehaviour
 
     private bool isMoving;
 
+    public static int ActiveProductCount { get; private set; }
+
+    [RuntimeInitializeOnLoadMethod(
+    RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetActiveProductCount()
+    {
+        ActiveProductCount = 0;
+    }
+
+    private bool registeredAsActive;
+
     public void Initialize(
         FactoryGrid factoryGrid,
         ConveyorConnectionManager connections,
@@ -32,6 +43,12 @@ public class ProductMover : MonoBehaviour
             Debug.LogError("ProductMover: Invalid setup.");
             enabled = false;
             return;
+        }
+
+        if (!registeredAsActive)
+        {
+            ActiveProductCount++;
+            registeredAsActive = true;
         }
 
         Vector2Int cell = currentModule.CurrentCell.Value;
@@ -113,5 +130,29 @@ public class ProductMover : MonoBehaviour
             );
         }
     }
+
+    public void UnregisterProduct()
+    {
+        if (!registeredAsActive)
+            return;
+
+        registeredAsActive = false;
+
+        ActiveProductCount = Mathf.Max(
+            0,
+            ActiveProductCount - 1
+        );
+
+        Debug.Log(
+            $"[Product] Unregistered {name}. " +
+            $"Active products: {ActiveProductCount}"
+        );
+    }
+
+    private void OnDestroy()
+    {
+        UnregisterProduct();
+    }
+
 
 }
