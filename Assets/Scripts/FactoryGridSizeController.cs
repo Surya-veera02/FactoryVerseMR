@@ -149,6 +149,16 @@ public class FactoryGridSizeController : MonoBehaviour
         }
 
         ResizeSurface();
+
+        // Move surrounding objects to their new board edges.
+        FactoryPerimeterAnchor[] anchors =
+            GetComponentsInChildren<FactoryPerimeterAnchor>(true);
+
+        foreach (FactoryPerimeterAnchor anchor in anchors)
+        {
+            anchor.UpdateAnchorPosition();
+        }
+
         connections.RebuildConnections();
         production.ValidateRoute();
         UpdateText();

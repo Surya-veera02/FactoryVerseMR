@@ -1658,6 +1658,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 479585648}
+  - component: {fileID: 479585649}
   m_Layer: 0
   m_Name: SHOPStation
   m_TagString: Untagged
@@ -1673,14 +1674,33 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 479585647}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0.118}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1429521586}
-  m_Father: {fileID: 1969260292}
+  - {fileID: 1971141239}
+  m_Father: {fileID: 1589328161}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &479585649
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 479585647}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 857430d65791fbf48b1e32261057947f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FactoryPerimeterAnchor
+  grid: {fileID: 1969260294}
+  anchorSide: 2
+  edgeGap: 0.04
+  alongEdgeOffset: 0
+  heightOffset: 0
+  updateContinuously: 0
 --- !u!1 &505486882
 GameObject:
   m_ObjectHideFlags: 0
@@ -3111,6 +3131,7 @@ GameObject:
   - component: {fileID: 907800226}
   - component: {fileID: 907800225}
   - component: {fileID: 907800228}
+  - component: {fileID: 907800229}
   m_Layer: 0
   m_Name: BoardGrabHandle
   m_TagString: Untagged
@@ -3131,7 +3152,7 @@ Transform:
   m_LocalScale: {x: 0.45, y: 0.035, z: 0.04}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1969260292}
+  m_Father: {fileID: 1589328161}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &907800222
 BoxCollider:
@@ -3462,6 +3483,24 @@ MonoBehaviour:
   m_StartingInteractionStrengthFilters: []
   m_AutoFindParentInteractableInHierarchy: 0
   m_ParentInteractableObject: {fileID: 0}
+--- !u!114 &907800229
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 907800220}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 857430d65791fbf48b1e32261057947f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FactoryPerimeterAnchor
+  grid: {fileID: 1969260294}
+  anchorSide: 0
+  edgeGap: 0.025
+  alongEdgeOffset: 0
+  heightOffset: 0
+  updateContinuously: 0
 --- !u!114 &916437840 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1228200670664215197, guid: 86a5bf68cb51f4e44bd3893bd22a2ba7, type: 3}
@@ -5854,6 +5893,7 @@ GameObject:
   - component: {fileID: 1541140308}
   - component: {fileID: 1541140305}
   - component: {fileID: 1541140309}
+  - component: {fileID: 1541140310}
   m_Layer: 0
   m_Name: FactoryControlPanel
   m_TagString: Untagged
@@ -5997,6 +6037,57 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   m_RaycastTriggerInteraction: 1
+--- !u!114 &1541140310
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1541140303}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 857430d65791fbf48b1e32261057947f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FactoryPerimeterAnchor
+  grid: {fileID: 1969260294}
+  anchorSide: 3
+  edgeGap: 0.06
+  alongEdgeOffset: 0
+  heightOffset: 0
+  updateContinuously: 0
+--- !u!1 &1589328160
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1589328161}
+  m_Layer: 0
+  m_Name: FactoryModules
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1589328161
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1589328160}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 907800221}
+  - {fileID: 479585648}
+  m_Father: {fileID: 1969260292}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1615728349
 GameObject:
   m_ObjectHideFlags: 0
@@ -8028,16 +8119,14 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 907800221}
+  - {fileID: 1589328161}
   - {fileID: 1059658041}
-  - {fileID: 479585648}
   - {fileID: 2058160589}
   - {fileID: 1541140304}
   - {fileID: 2051553700}
   - {fileID: 951731649}
   - {fileID: 92120476}
   - {fileID: 95476584}
-  - {fileID: 1971141239}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1969260293
@@ -8163,6 +8252,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1971141239}
+  - component: {fileID: 1971141240}
   m_Layer: 0
   m_Name: ShopPickupPoint
   m_TagString: Untagged
@@ -8178,13 +8268,31 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1971141238}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.55, y: 0.15, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.55, y: 0.15, z: -0.347}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1969260292}
+  m_Father: {fileID: 479585648}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1971141240
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1971141238}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 857430d65791fbf48b1e32261057947f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FactoryPerimeterAnchor
+  grid: {fileID: 1969260294}
+  anchorSide: 0
+  edgeGap: 0.025
+  alongEdgeOffset: 0
+  heightOffset: 0
+  updateContinuously: 0
 --- !u!224 &2001866392 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4941219564456579801, guid: dc067c577ec1b854684d789b6e727cc0, type: 3}
@@ -8304,6 +8412,7 @@ GameObject:
   - component: {fileID: 2058160587}
   - component: {fileID: 2058160586}
   - component: {fileID: 2058160590}
+  - component: {fileID: 2058160591}
   m_Layer: 5
   m_Name: ShopControlPanel
   m_TagString: Untagged
@@ -8413,6 +8522,24 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   m_RaycastTriggerInteraction: 1
+--- !u!114 &2058160591
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2058160585}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 857430d65791fbf48b1e32261057947f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FactoryPerimeterAnchor
+  grid: {fileID: 1969260294}
+  anchorSide: 6
+  edgeGap: 0.06
+  alongEdgeOffset: 0
+  heightOffset: 0
+  updateContinuously: 0
 --- !u!1 &2066117192 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8893227839204258060, guid: 66d40221d132d04499855da9ce315f20, type: 3}
