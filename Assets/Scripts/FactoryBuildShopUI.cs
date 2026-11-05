@@ -20,6 +20,9 @@ public class FactoryBuildShopUI : MonoBehaviour
     [SerializeField] private int maxConveyors = 5;
     [SerializeField] private int maxPackingMachines = 1;
 
+    [Header("Shop Spawning")]
+    [SerializeField] private FactoryShopSpawner shopSpawner;
+
     [Header("UI")]
     [SerializeField] private TMP_Text conveyorCountText;
     [SerializeField] private TMP_Text packingCountText;
@@ -102,29 +105,43 @@ public class FactoryBuildShopUI : MonoBehaviour
             FactoryProductionController.ProductionState.InvalidRoute;
     }
 
+
     private void SelectConveyor()
     {
-        if (!CanBuild())
+        if (!CanBuild() || shopSpawner == null)
             return;
 
+        if (!shopSpawner.TrySpawnConveyor())
+        {
+            SetSelectionText("FINISH CURRENT PLACEMENT");
+            return;
+        }
+
         SelectedModule = BuildModuleType.Conveyor;
+        SetSelectionText("PICK UP CONVEYOR");
 
-        SetSelectionText("SELECTED: CONVEYOR");
-
-        Debug.Log("[Build Shop] Conveyor selected.");
+        Debug.Log("[Build Shop] Conveyor spawned.");
     }
+
+
 
     private void SelectPackingMachine()
     {
-        if (!CanBuild())
+        if (!CanBuild() || shopSpawner == null)
             return;
 
+        if (!shopSpawner.TrySpawnPackingMachine())
+        {
+            SetSelectionText("FINISH CURRENT PLACEMENT");
+            return;
+        }
+
         SelectedModule = BuildModuleType.PackingMachine;
+        SetSelectionText("PICK UP PACKING MACHINE");
 
-        SetSelectionText("SELECTED: PACKING MACHINE");
-
-        Debug.Log("[Build Shop] Packing machine selected.");
+        Debug.Log("[Build Shop] Packing machine spawned.");
     }
+
 
     private void SetSelectionText(string message)
     {
