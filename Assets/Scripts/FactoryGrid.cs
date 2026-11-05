@@ -14,6 +14,8 @@ public class FactoryGrid : MonoBehaviour
 
     private const float lineThickness = 0.003f;
 
+    private Transform gridVisualsRoot;
+    public float CellSize => cellSize;
     public int Columns => columns;
     public int Rows => rows;
 
@@ -34,6 +36,7 @@ public class FactoryGrid : MonoBehaviour
     {
         GameObject gridRoot = new GameObject("GridVisuals");
         gridRoot.transform.SetParent(transform, false);
+        gridVisualsRoot = gridRoot.transform;
 
         float width = columns * cellSize;
         float depth = rows * cellSize;
@@ -124,4 +127,32 @@ public class FactoryGrid : MonoBehaviour
         return column >= 0 && column < columns &&
                row >= 0 && row < rows;
     }
+
+
+    public bool IsCellWithinBounds(Vector2Int cell, int newColumns, int newRows)
+    {
+        return cell.x >= 0 &&
+               cell.x < newColumns &&
+               cell.y >= 0 &&
+               cell.y < newRows;
+    }
+
+    public void SetGridSize(int newColumns, int newRows)
+    {
+        columns = Mathf.Clamp(newColumns, 4, 10);
+        rows = Mathf.Clamp(newRows, 4, 10);
+
+        if (gridVisualsRoot != null)
+        {
+            gridVisualsRoot.gameObject.SetActive(false);
+            Destroy(gridVisualsRoot.gameObject);
+            gridVisualsRoot = null;
+        }
+
+        if (showGridVisuals)
+            CreateGridVisuals();
+
+        Debug.Log($"[Factory Grid] Resized to {columns}x{rows}");
+    }
+
 }

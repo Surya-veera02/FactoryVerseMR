@@ -204,6 +204,29 @@ public class PackingMachinePlacement : MonoBehaviour
         Debug.Log(
             $"[Packing Machine] Placed over conveyor at {cell}."
         );
-
     }
+
+    public void RealignToConveyor(ConveyorModule conveyor)
+    {
+        if (!isPlaced || conveyor == null ||
+            !conveyor.CurrentCell.HasValue || grid == null)
+            return;
+
+        Vector2Int cell = conveyor.CurrentCell.Value;
+
+        Vector3 targetPosition =
+            grid.GetCellCenterWorld(cell.x, cell.y) +
+            grid.transform.up * heightOffset;
+
+        Quaternion targetRotation = conveyor.transform.rotation;
+
+        transform.SetPositionAndRotation(
+            targetPosition,
+            targetRotation
+        );
+
+        rb.position = targetPosition;
+        rb.rotation = targetRotation;
+    }
+
 }
