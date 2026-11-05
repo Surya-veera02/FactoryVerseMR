@@ -9,6 +9,8 @@ public class FactoryBuildShopUI : MonoBehaviour
     {
         None,
         Conveyor,
+        CornerRight,
+        CornerLeft,
         PackingMachine
     }
 
@@ -31,6 +33,10 @@ public class FactoryBuildShopUI : MonoBehaviour
     [SerializeField] private Button conveyorSelectButton;
     [SerializeField] private Button packingSelectButton;
 
+    [Header("Corner Conveyor Buttons")]
+    [SerializeField] private Button cornerRightSelectButton;
+    [SerializeField] private Button cornerLeftSelectButton;
+
     public BuildModuleType SelectedModule { get; private set; }
         = BuildModuleType.None;
 
@@ -46,13 +52,19 @@ public class FactoryBuildShopUI : MonoBehaviour
         if (packingSelectButton != null)
             packingSelectButton.onClick.AddListener(
                 SelectPackingMachine);
+
+        if (cornerRightSelectButton != null)
+            cornerRightSelectButton.onClick.AddListener(SelectCornerRight);
+
+        if (cornerLeftSelectButton != null)
+            cornerLeftSelectButton.onClick.AddListener(SelectCornerLeft);
     }
+
 
     private void Update()
     {
         if (controller == null || factoryBoard == null)
             return;
-
 
         int placedConveyors = 0;
 
@@ -65,15 +77,16 @@ public class FactoryBuildShopUI : MonoBehaviour
                 placedConveyors++;
         }
 
-
         bool canBuild = CanBuild();
 
+        // Update conveyor inventory text.
         if (conveyorCountText != null)
         {
             conveyorCountText.text =
                 $"CONVEYORS: {placedConveyors}/{maxConveyors}";
         }
 
+        // Update packing machine inventory text.
         if (packingCountText != null)
         {
             packingCountText.text =
@@ -81,12 +94,29 @@ public class FactoryBuildShopUI : MonoBehaviour
                 $"{placedPackingMachines}/{maxPackingMachines}";
         }
 
+        // All conveyor types share the same inventory limit.
+        bool canAddConveyor =
+            canBuild && placedConveyors < maxConveyors;
+
+        // Straight conveyor button.
         if (conveyorSelectButton != null)
         {
-            conveyorSelectButton.interactable =
-                canBuild && placedConveyors < maxConveyors;
+            conveyorSelectButton.interactable = canAddConveyor;
         }
 
+        // Right corner conveyor button.
+        if (cornerRightSelectButton != null)
+        {
+            cornerRightSelectButton.interactable = canAddConveyor;
+        }
+
+        // Left corner conveyor button.
+        if (cornerLeftSelectButton != null)
+        {
+            cornerLeftSelectButton.interactable = canAddConveyor;
+        }
+
+        // Packing machine button.
         if (packingSelectButton != null)
         {
             packingSelectButton.interactable =
@@ -94,6 +124,7 @@ public class FactoryBuildShopUI : MonoBehaviour
                 placedPackingMachines < maxPackingMachines;
         }
 
+        // Disable build selection during production.
         if (!canBuild &&
             SelectedModule != BuildModuleType.None)
         {
@@ -101,6 +132,7 @@ public class FactoryBuildShopUI : MonoBehaviour
             SetSelectionText("BUILD MODE UNAVAILABLE");
         }
     }
+
 
     private bool CanBuild()
     {
@@ -169,6 +201,38 @@ public class FactoryBuildShopUI : MonoBehaviour
         SetSelectionText("PACKING MACHINE PLACED");
     }
 
+
+    private void SelectCornerRight()
+    {
+        if (!CanBuild() || shopSpawner == null)
+            return;
+
+        if (!shopSpawner.TrySpawnCornerRight())
+        {
+            SetSelectionText("FINISH CURRENT PLACEMENT");
+            return;
+        }
+
+        SelectedModule = BuildModuleType.CornerRight;
+        SetSelectionText("PICK UP RIGHT CORNER");
+    }
+
+    private void SelectCornerLeft()
+    {
+        if (!CanBuild() || shopSpawner == null)
+            return;
+
+        if (!shopSpawner.TrySpawnCornerLeft())
+        {
+            SetSelectionText("FINISH CURRENT PLACEMENT");
+            return;
+        }
+
+        SelectedModule = BuildModuleType.CornerLeft;
+        SetSelectionText("PICK UP LEFT CORNER");
+    }
+
+
     private void OnDestroy()
     {
         if (conveyorSelectButton != null)
@@ -178,5 +242,11 @@ public class FactoryBuildShopUI : MonoBehaviour
         if (packingSelectButton != null)
             packingSelectButton.onClick.RemoveListener(
                 SelectPackingMachine);
+
+        if (cornerRightSelectButton != null)
+            cornerRightSelectButton.onClick.RemoveListener(SelectCornerRight);
+
+        if (cornerLeftSelectButton != null)
+            cornerLeftSelectButton.onClick.RemoveListener(SelectCornerLeft);
     }
 }

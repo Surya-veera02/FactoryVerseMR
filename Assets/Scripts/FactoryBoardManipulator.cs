@@ -62,22 +62,24 @@ public class FactoryBoardManipulator : MonoBehaviour
 
     private void OnSelected(SelectEnterEventArgs args)
     {
-        if (!hands.Contains(args.interactorObject) &&
-            hands.Count < 2)
-        {
-            hands.Add(args.interactorObject);
-        }
+        if (hands.Contains(args.interactorObject) ||
+            hands.Count >= 2)
+            return;
+
+        hands.Add(args.interactorObject);
 
         CaptureStartingPose();
+
         Debug.Log(
-    $"BOARD GRAB: {hands.Count} hand(s) selected. " +
-    $"Starting distance: {startHandDistance:F3}m"
-);
+            $"BOARD GRAB: {hands.Count} hand(s) selected."
+        );
     }
 
     private void OnDeselected(SelectExitEventArgs args)
     {
-        hands.Remove(args.interactorObject);
+        if (!hands.Remove(args.interactorObject))
+            return;
+
         CaptureStartingPose();
     }
 

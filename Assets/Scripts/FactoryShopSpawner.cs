@@ -7,6 +7,10 @@ public class FactoryShopSpawner : MonoBehaviour
     [SerializeField] private GameObject conveyorPrefab;
     [SerializeField] private GameObject packingMachinePrefab;
 
+    [Header("Corner Conveyor Prefabs")]
+    [SerializeField] private GameObject cornerRightPrefab;
+    [SerializeField] private GameObject cornerLeftPrefab;
+
     [Header("Placement")]
     [SerializeField] private Transform factoryBoard;
     [SerializeField] private Transform pickupPoint;
@@ -27,6 +31,24 @@ public class FactoryShopSpawner : MonoBehaviour
     {
         return TrySpawn(packingMachinePrefab, "Packing Machine");
     }
+
+
+    public bool TrySpawnCornerRight()
+    {
+        return TrySpawn(
+            cornerRightPrefab,
+            "Right Corner Conveyor"
+        );
+    }
+
+    public bool TrySpawnCornerLeft()
+    {
+        return TrySpawn(
+            cornerLeftPrefab,
+            "Left Corner Conveyor"
+        );
+    }
+
 
     private bool TrySpawn(
         GameObject prefab,

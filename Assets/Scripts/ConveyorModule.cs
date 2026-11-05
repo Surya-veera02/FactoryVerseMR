@@ -19,6 +19,29 @@ public class ConveyorModule : MonoBehaviour
 
     public int QuarterTurns => quarterTurns;
 
+    public enum ConveyorShape
+    {
+        Straight,
+        Corner
+    }
+
+    public enum CornerTurn
+    {
+        Right,
+        Left
+    }
+
+    [Header("Conveyor Shape")]
+    [SerializeField]
+    private ConveyorShape conveyorShape =
+        ConveyorShape.Straight;
+
+    [SerializeField]
+    private CornerTurn cornerTurn =
+        CornerTurn.Right;
+
+    public ConveyorShape Shape => conveyorShape;
+    public bool IsCorner => conveyorShape == ConveyorShape.Corner;
 
     public Vector2Int OutputDirection
     {
@@ -34,7 +57,34 @@ public class ConveyorModule : MonoBehaviour
         }
     }
 
-    public Vector2Int InputDirection => -OutputDirection;
+    public Vector2Int InputDirection
+    {
+        get
+        {
+            if (conveyorShape == ConveyorShape.Straight)
+                return -OutputDirection;
+
+            Vector2Int output = OutputDirection;
+
+            // Right turn: incoming neighbour is
+            // 90 degrees clockwise from the output.
+            if (cornerTurn == CornerTurn.Right)
+            {
+                return new Vector2Int(
+                    output.y,
+                    -output.x
+                );
+            }
+
+            // Left turn: incoming neighbour is
+            // 90 degrees counterclockwise from the output.
+            return new Vector2Int(
+                -output.y,
+                output.x
+            );
+        }
+    }
+
 
     public Vector2Int? OutputCell
     {
