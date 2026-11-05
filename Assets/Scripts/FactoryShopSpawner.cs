@@ -61,8 +61,6 @@ public class FactoryShopSpawner : MonoBehaviour
             factoryBoard
         );
 
-        // Conveyor_Shop prefab is saved inactive,
-        // so its Awake/OnEnable haven't run yet.
         instance.SetActive(false);
 
         ConveyorModule conveyor =
@@ -73,9 +71,22 @@ public class FactoryShopSpawner : MonoBehaviour
             conveyor.SetAutoSnapOnStart(false);
         }
 
-        instance.SetActive(true);
+        // Add and initialize the placement component.
+        ShopPendingPlacement pendingPlacement =
+            instance.GetComponent<ShopPendingPlacement>();
 
+        if (pendingPlacement == null)
+        {
+            pendingPlacement =
+                instance.AddComponent<ShopPendingPlacement>();
+        }
+
+        pendingPlacement.Initialize(this);
+
+        // Register pending instance before activation.
         pendingModule = instance;
+
+        instance.SetActive(true);
 
         if (logSpawning)
         {
@@ -99,13 +110,41 @@ public class FactoryShopSpawner : MonoBehaviour
         Debug.Log("[Shop] Pending module cancelled.");
     }
 
+
     public void ConfirmPendingModule(GameObject instance)
     {
         if (instance != pendingModule)
+        {
+            Debug.LogWarning(
+                "[Shop] Confirmation rejected: " +
+                "instance is not the pending module."
+            );
             return;
+        }
+
+        PackingMachinePlacement packing =
+            instance.GetComponent<PackingMachinePlacement>();
+
+        if (packing != null)
+        {
+            FactoryBuildShopUI shopUI =
+                FindFirstObjectByType<FactoryBuildShopUI>();
+
+            if (shopUI != null)
+            {
+                shopUI.RegisterPackingMachinePlacement();
+            }
+            else
+            {
+                Debug.LogError(
+                    "[Shop] FactoryBuildShopUI not found!"
+                );
+            }
+        }
 
         pendingModule = null;
 
         Debug.Log("[Shop] Module placement confirmed.");
     }
+
 }

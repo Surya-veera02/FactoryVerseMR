@@ -157,12 +157,27 @@ public class ConveyorGrabSnap : MonoBehaviour
             releaseRotation
         );
 
-        // Snap position and apply the grid-aligned rotation.
-        conveyorModule.SnapToNearestCell();
+
+        // Snap position and check whether placement succeeded.
+        bool snapSucceeded =
+            conveyorModule.TrySnapToNearestCell();
 
         // Synchronize Rigidbody with the final snapped pose.
         rb.position = transform.position;
         rb.rotation = transform.rotation;
+
+        // Notify the shop only when a new conveyor
+        // has been placed on a valid grid cell.
+        ShopPendingPlacement pendingPlacement =
+            GetComponent<ShopPendingPlacement>();
+
+        if (pendingPlacement != null &&
+            pendingPlacement.IsPending &&
+            snapSucceeded)
+        {
+            pendingPlacement.ConfirmPlacement();
+        }
+
 
         Debug.Log(
             $"{name} snapped at {transform.position}"

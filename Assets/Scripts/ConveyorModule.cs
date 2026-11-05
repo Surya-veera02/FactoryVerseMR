@@ -105,11 +105,18 @@ public class ConveyorModule : MonoBehaviour
 
     }
 
+
     [ContextMenu("Snap To Nearest Cell")]
     public void SnapToNearestCell()
     {
+        TrySnapToNearestCell();
+    }
+
+    // Returns true only when placement succeeds.
+    public bool TrySnapToNearestCell()
+    {
         if (!Application.isPlaying || placementManager == null)
-            return;
+            return false;
 
         bool success = placementManager.TrySnap(
             this,
@@ -122,10 +129,14 @@ public class ConveyorModule : MonoBehaviour
                 $"{name}: Cell occupied or outside grid."
             );
 
-            // Return to the last valid position.
-            placementManager.AlignModule(this);
+            // Return existing conveyors to their last valid cell.
+            if (CurrentCell.HasValue)
+                placementManager.AlignModule(this);
         }
+
+        return success;
     }
+
 
     [ContextMenu("Rotate 90 Degrees")]
     public void Rotate90()

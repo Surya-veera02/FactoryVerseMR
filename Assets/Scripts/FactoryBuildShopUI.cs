@@ -53,9 +53,18 @@ public class FactoryBuildShopUI : MonoBehaviour
         if (controller == null || factoryBoard == null)
             return;
 
-        int placedConveyors =
-            factoryBoard.GetComponentsInChildren
-                <ConveyorModule>(true).Length;
+
+        int placedConveyors = 0;
+
+        ConveyorModule[] conveyors =
+            factoryBoard.GetComponentsInChildren<ConveyorModule>();
+
+        foreach (ConveyorModule conveyor in conveyors)
+        {
+            if (conveyor.CurrentCell.HasValue)
+                placedConveyors++;
+        }
+
 
         bool canBuild = CanBuild();
 
