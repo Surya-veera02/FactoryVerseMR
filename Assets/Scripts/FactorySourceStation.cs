@@ -1,5 +1,4 @@
 
-using System.Collections;
 using UnityEngine;
 
 public class FactorySourceStation : MonoBehaviour
@@ -11,17 +10,17 @@ public class FactorySourceStation : MonoBehaviour
     [SerializeField] private ConveyorConnectionManager connectionManager;
 
     [Header("Production")]
-    [SerializeField] private float spawnInterval = 2.5f;
     [SerializeField] private int maxProducts = 10;
-    [SerializeField] private bool autoStart = false;
+    [SerializeField] private float pokeCooldown = 0.5f;
+    [SerializeField] private int maxActiveProducts = 3;
 
     private int productsSpawned;
-    private Coroutine productionRoutine;
+    private bool productionEnabled;
+    private float nextSpawnTime;
 
     public int ProductsSpawned => productsSpawned;
-
-    public bool IsProducing => productionRoutine != null;
     public int MaxProducts => maxProducts;
+    public bool IsProducing => productionEnabled;
 
     private void Awake()
     {
@@ -36,17 +35,10 @@ public class FactorySourceStation : MonoBehaviour
                 GetComponentInParent<ConveyorConnectionManager>();
     }
 
-    private void Start()
-    {
-        if (autoStart)
-            StartProduction();
-    }
-
     [ContextMenu("Start Production")]
     public void StartProduction()
     {
-        if (!Application.isPlaying ||
-            productionRoutine != null)
+        if (!Application.isPlaying || productionEnabled)
             return;
 
         if (productPrefab == null ||
@@ -55,80 +47,123 @@ public class FactorySourceStation : MonoBehaviour
             connectionManager == null)
         {
             Debug.LogError(
-                "FactorySourceStation: Missing references."
+                "[Source] Missing production references."
             );
             return;
         }
 
-        productionRoutine =
-            StartCoroutine(ProductionLoop());
+        productionEnabled = true;
+
+        Debug.Log(
+            "[Source] Manual production enabled. " +
+            "Poke the machine to spawn a product."
+        );
     }
 
-    private IEnumerator ProductionLoop()
+    // Called by the source machine's poke interaction.
+    public bool TrySpawnProduct()
     {
-        // Allow conveyor registration to finish.
-        yield return null;
 
-        while (productsSpawned < maxProducts)
+        Debug.Log(
+            $"[SOURCE DEBUG] " +
+            $"Enabled={productionEnabled}, " +
+            $"Spawned={productsSpawned}/{maxProducts}, " +
+            $"Active={ProductMover.ActiveProductCount}/{maxActiveProducts}, " +
+            $"CooldownRemaining={Mathf.Max(0f, nextSpawnTime - Time.time):F2}, " +
+            $"HasSourceCell={sourceConveyor != null && sourceConveyor.CurrentCell.HasValue}, " +
+            $"PrefabAssigned={productPrefab != null}, " +
+            $"GridAssigned={grid != null}, " +
+            $"ConnectionsAssigned={connectionManager != null}"
+        );
+
+        if (!Application.isPlaying || !productionEnabled)
+            return false;
+
+        if (!HasProductsRemaining())
         {
-            if (sourceConveyor.CurrentCell.HasValue)
-            {
-                GameObject product = Instantiate(
-                    productPrefab,
-                    transform.position,
-                    Quaternion.identity
-                );
-
-                ProductMover mover =
-                    product.GetComponent<ProductMover>();
-
-                if (mover == null)
-                    mover = product.AddComponent<ProductMover>();
-
-                mover.Initialize(
-                    grid,
-                    connectionManager,
-                    sourceConveyor
-                );
-
-                productsSpawned++;
-
-                Debug.Log(
-                    $"[Source] Product spawned: " +
-                    $"{productsSpawned}/{maxProducts}"
-                );
-            }
-
-            yield return new WaitForSeconds(spawnInterval);
+            Debug.Log("[Source] Production quantity reached.");
+            return false;
         }
 
-        productionRoutine = null;
+        if (Time.time < nextSpawnTime)
+            return false;
 
-        Debug.Log("[Source] Production completed.");
+        if (ProductMover.ActiveProductCount >= maxActiveProducts)
+        {
+            Debug.Log(
+                "[Source] Too many active products. " +
+                "Wait for products to leave the conveyor."
+            );
+            return false;
+        }
+
+        if (productPrefab == null ||
+            sourceConveyor == null ||
+            grid == null ||
+            connectionManager == null ||
+            !sourceConveyor.CurrentCell.HasValue)
+        {
+            Debug.LogWarning(
+                "[Source] Product cannot spawn: invalid setup."
+            );
+            return false;
+        }
+
+        GameObject product = Instantiate(
+            productPrefab,
+            transform.position,
+            Quaternion.identity
+        );
+
+        ProductMover mover =
+            product.GetComponent<ProductMover>();
+
+        if (mover == null)
+            mover = product.AddComponent<ProductMover>();
+
+        mover.Initialize(
+            grid,
+            connectionManager,
+            sourceConveyor
+        );
+
+        if (!mover.isActiveAndEnabled)
+        {
+            Destroy(product);
+            return false;
+        }
+
+        productsSpawned++;
+        nextSpawnTime = Time.time + pokeCooldown;
+
+        Debug.Log(
+            $"[Source] Product spawned by poke: " +
+            $"{productsSpawned}/{maxProducts}"
+        );
+
+        return true;
     }
-
 
     [ContextMenu("Stop Production")]
     public void StopProduction()
     {
-        if (productionRoutine == null)
+        if (!productionEnabled)
             return;
 
-        StopCoroutine(productionRoutine);
-        productionRoutine = null;
+        productionEnabled = false;
 
-        Debug.Log("[Source] Production stopped.");
+        Debug.Log("[Source] Manual production disabled.");
     }
 
     public void ResetProduction()
     {
         StopProduction();
         productsSpawned = 0;
+        nextSpawnTime = 0f;
     }
 
     public bool HasProductsRemaining()
     {
         return productsSpawned < maxProducts;
     }
-
 }

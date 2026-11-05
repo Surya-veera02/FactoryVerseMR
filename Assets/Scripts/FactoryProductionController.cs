@@ -20,6 +20,9 @@ public class FactoryProductionController : MonoBehaviour
     [SerializeField] private FactoryShippingStation shipping;
     [SerializeField] private ConveyorConnectionManager connections;
 
+    [Header("Build Shop")]
+    [SerializeField] private FactoryShopSpawner shopSpawner;
+
     [Header("Status")]
     [SerializeField]
     private ProductionState currentState =
@@ -27,12 +30,18 @@ public class FactoryProductionController : MonoBehaviour
 
     public ProductionState CurrentState => currentState;
 
+
     private void Awake()
     {
         if (connections == null)
             connections =
                 GetComponent<ConveyorConnectionManager>();
+
+        if (shopSpawner == null)
+            shopSpawner =
+                GetComponentInChildren<FactoryShopSpawner>(true);
     }
+
 
     private void Start()
     {
@@ -84,6 +93,14 @@ public class FactoryProductionController : MonoBehaviour
     [ContextMenu("Start Factory")]
     public void StartFactory()
     {
+        Debug.Log(
+    $"[START DEBUG] State={currentState}, " +
+    $"Source={(source != null ? source.name : "NULL")}, " +
+    $"Shipping={(shipping != null ? shipping.name : "NULL")}, " +
+    $"Pending={(shopSpawner != null && shopSpawner.HasPendingModule)}, " +
+    $"Active={ProductMover.ActiveProductCount}"
+);
+
         if (!Application.isPlaying)
             return;
 
@@ -91,6 +108,15 @@ public class FactoryProductionController : MonoBehaviour
             currentState == ProductionState.Stopping ||
             currentState == ProductionState.Completed)
             return;
+
+        if (shopSpawner != null && shopSpawner.HasPendingModule)
+        {
+            Debug.LogWarning(
+                "[Factory] Finish placing or cancel the pending " +
+                "shop module before starting production."
+            );
+            return;
+        }
 
         if (source == null || !source.HasProductsRemaining())
         {
@@ -158,6 +184,16 @@ public class FactoryProductionController : MonoBehaviour
         if (shipping == null)
             return;
 
+        if (currentState == ProductionState.Running &&
+    !source.IsProducing)
+        {
+            Debug.LogWarning(
+                "[Factory DEBUG] Controller is Running, " +
+                "but source production is disabled. " +
+                $"ShippingObjectiveCompleted={shipping.ObjectiveCompleted}"
+            );
+        }
+
         // Check whether the delivery objective is complete.
         if (shipping.ObjectiveCompleted &&
             currentState != ProductionState.Completed)
@@ -190,8 +226,11 @@ public class FactoryProductionController : MonoBehaviour
     }
 
 
+
+
     private void SetConveyorsLocked(bool locked)
     {
+        // Lock or unlock conveyor belts.
         ConveyorModule[] conveyors =
             GetComponentsInChildren<ConveyorModule>();
 
@@ -202,16 +241,41 @@ public class FactoryProductionController : MonoBehaviour
 
             if (grab != null)
             {
-                grab.enabled = !locked;
+                // Do not unlock an unfinished shop placement.
+                ShopPendingPlacement pending =
+                    conveyor.GetComponent<ShopPendingPlacement>();
+
+                bool isPending =
+                    pending != null && pending.IsPending;
+
+                grab.enabled = !locked || isPending;
+            }
+        }
+
+        // Lock packing machines during production.
+        // Installed machines remain fixed in Level 1.
+        PackingMachinePlacement[] packingMachines =
+            GetComponentsInChildren<PackingMachinePlacement>();
+
+        foreach (PackingMachinePlacement packing in packingMachines)
+        {
+            XRGrabInteractable grab =
+                packing.GetComponent<XRGrabInteractable>();
+
+            if (grab != null)
+            {
+                grab.enabled = !locked && !packing.IsPlaced;
             }
         }
 
         Debug.Log(
             locked
-                ? "[Factory] Conveyors locked."
-                : "[Factory] Conveyors unlocked."
+                ? "[Factory] Build modules locked."
+                : "[Factory] Build mode enabled."
         );
     }
+
+
 
     [ContextMenu("Clear Line")]
     public void ClearLine()
@@ -242,6 +306,18 @@ public class FactoryProductionController : MonoBehaviour
     [ContextMenu("Reset Factory")]
     public void ResetFactory()
     {
+
+        if (currentState == ProductionState.Running ||
+            currentState == ProductionState.Stopping)
+        {
+            Debug.LogWarning(
+                "[Factory] Wait for production to stop " +
+                "before resetting the factory."
+            );
+            return;
+        }
+
+
         source.StopProduction();
 
         ProductMover[] products =

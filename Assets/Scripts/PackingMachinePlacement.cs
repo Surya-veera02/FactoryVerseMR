@@ -26,6 +26,7 @@ public class PackingMachinePlacement : MonoBehaviour
 
     private bool isGrabbed;
     private bool isPlaced;
+    public bool IsPlaced => isPlaced;
     private Coroutine snapCoroutine;
 
     private void Awake()
@@ -175,6 +176,9 @@ public class PackingMachinePlacement : MonoBehaviour
 
 
         isPlaced = true;
+
+        // Packing machine is fixed after successful placement.
+        grabInteractable.enabled = false;
 
         // Get the component at the moment placement succeeds,
         // rather than relying on an earlier Awake reference.
