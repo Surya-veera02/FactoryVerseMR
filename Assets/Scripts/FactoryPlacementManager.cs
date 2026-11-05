@@ -74,6 +74,40 @@ public class FactoryPlacementManager : MonoBehaviour
         return true;
     }
 
+
+    // Check whether a conveyor can occupy a grid cell
+    // without changing the existing placement.
+    public bool CanPlaceConveyor(
+        ConveyorModule module,
+        Vector3 worldPosition)
+    {
+        if (grid == null || module == null)
+            return false;
+
+        if (!grid.TryGetCell(
+            worldPosition,
+            out int column,
+            out int row))
+        {
+            return false;
+        }
+
+        Vector2Int targetCell =
+            new Vector2Int(column, row);
+
+        // Check the occupancy dictionary directly.
+        if (occupiedCells.TryGetValue(
+            targetCell,
+            out ConveyorModule existing))
+        {
+            if (existing != null && existing != module)
+                return false;
+        }
+
+        return true;
+    }
+
+
     public void AlignModule(ConveyorModule module)
     {
         if (grid == null || !module.CurrentCell.HasValue)

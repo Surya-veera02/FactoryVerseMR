@@ -11,6 +11,10 @@ public class ConveyorModule : MonoBehaviour
     [SerializeField, Range(0, 3)]
     private int quarterTurns = 0;
 
+    [Header("Shop Placement")]
+    [SerializeField]
+    private bool autoSnapOnStart = true;
+
     public Vector2Int? CurrentCell { get; private set; }
 
     public int QuarterTurns => quarterTurns;
@@ -76,8 +80,20 @@ public class ConveyorModule : MonoBehaviour
             return;
         }
 
-        // Snap to the starting cell.
-        if (!placementManager.TrySnap(this, transform.position))
+
+        // Existing scene conveyors register automatically.
+        // Shop-spawned conveyors wait until the player places them.
+        if (!autoSnapOnStart)
+        {
+            Debug.Log(
+                $"{name}: Waiting for player placement."
+            );
+            return;
+        }
+
+        if (!placementManager.TrySnap(
+            this,
+            transform.position))
         {
             Debug.LogWarning(
                 $"{name}: Starting cell unavailable. " +
@@ -86,6 +102,7 @@ public class ConveyorModule : MonoBehaviour
 
             gameObject.SetActive(false);
         }
+
     }
 
     [ContextMenu("Snap To Nearest Cell")]
@@ -167,6 +184,10 @@ public class ConveyorModule : MonoBehaviour
         );
     }
 
+    public void SetAutoSnapOnStart(bool enabled)
+    {
+        autoSnapOnStart = enabled;
+    }
 
     private void OnDestroy()
     {
