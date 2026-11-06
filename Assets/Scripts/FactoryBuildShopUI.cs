@@ -71,11 +71,20 @@ public class FactoryBuildShopUI : MonoBehaviour
         ConveyorModule[] conveyors =
             factoryBoard.GetComponentsInChildren<ConveyorModule>();
 
+
         foreach (ConveyorModule conveyor in conveyors)
         {
-            if (conveyor.CurrentCell.HasValue)
-                placedConveyors++;
+            if (!conveyor.CurrentCell.HasValue)
+                continue;
+
+            // Fixed stations do not consume shop inventory.
+            if (conveyor.GetComponent<FactorySourceStation>() != null ||
+                conveyor.GetComponent<FactoryShippingStation>() != null)
+                continue;
+
+            placedConveyors++;
         }
+
 
         bool canBuild = CanBuild();
 
@@ -131,6 +140,16 @@ public class FactoryBuildShopUI : MonoBehaviour
             SelectedModule = BuildModuleType.None;
             SetSelectionText("BUILD MODE UNAVAILABLE");
         }
+    }
+
+    public void ResetLayoutInventory()
+    {
+        placedPackingMachines = 0;
+        SelectedModule = BuildModuleType.None;
+
+        SetSelectionText("FACTORY LAYOUT RESET");
+
+        Debug.Log("[Build Shop] Layout inventory reset.");
     }
 
 

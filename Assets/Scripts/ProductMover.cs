@@ -6,7 +6,7 @@ public class ProductMover : MonoBehaviour
 {
     [Header("Movement")]
     [SerializeField] private float speed = 0.12f;
-    [SerializeField] private float heightAboveBoard = 0.045f;
+    [SerializeField] private float heightAboveBoard = 0.06f;
 
     [Header("Corner Movement")]
     [SerializeField] private bool smoothCorners = true;

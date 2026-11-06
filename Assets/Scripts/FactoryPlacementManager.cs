@@ -164,4 +164,14 @@ public class FactoryPlacementManager : MonoBehaviour
         return null;
     }
 
+    public void ClearOccupancyForLayoutReset()
+    {
+        occupiedCells.Clear();
+
+        Debug.Log(
+            "[Factory Placement] Occupancy cleared for layout reset."
+        );
+    }
+
+
 }
