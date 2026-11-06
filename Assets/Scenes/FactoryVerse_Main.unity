@@ -606,6 +606,7 @@ GameObject:
   m_Component:
   - component: {fileID: 95476584}
   - component: {fileID: 95476585}
+  - component: {fileID: 95476586}
   m_Layer: 0
   m_Name: FactoryShopSpawner
   m_TagString: Untagged
@@ -647,6 +648,24 @@ MonoBehaviour:
   factoryBoard: {fileID: 1969260292}
   pickupPoint: {fileID: 1971141239}
   logSpawning: 1
+--- !u!114 &95476586
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 95476583}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 857430d65791fbf48b1e32261057947f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FactoryPerimeterAnchor
+  grid: {fileID: 1969260294}
+  anchorSide: 2
+  edgeGap: 0.06
+  alongEdgeOffset: -0.2
+  heightOffset: 0
+  updateContinuously: 0
 --- !u!114 &116192049 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7974699828455904068, guid: b6d57cedc6a73c94aad8ce006a26b41b, type: 3}
@@ -1835,9 +1854,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FactoryPerimeterAnchor
   grid: {fileID: 1969260294}
-  anchorSide: 0
-  edgeGap: -0.25
-  alongEdgeOffset: 0.05
+  anchorSide: 2
+  edgeGap: -0.38
+  alongEdgeOffset: 0.15
   heightOffset: 0
   updateContinuously: 0
 --- !u!1 &505486882

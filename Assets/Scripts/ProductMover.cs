@@ -1,4 +1,5 @@
 
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ProductMover : MonoBehaviour
@@ -11,8 +12,8 @@ public class ProductMover : MonoBehaviour
     [SerializeField] private bool smoothCorners = true;
     [SerializeField, Range(0.1f, 0.5f)]
     private float cornerRadiusFactor = 0.35f;
-
     [SerializeField] private bool rotateWithPath = true;
+    [SerializeField] private float productRotationOffset = 0f;
 
     private FactoryGrid grid;
     private ConveyorConnectionManager connectionManager;
@@ -22,13 +23,19 @@ public class ProductMover : MonoBehaviour
     private bool isMoving;
     private bool registeredAsActive;
 
-    private Vector3 segmentStart;
-    private Vector3 segmentEnd;
-    private Vector3 curveControl;
+    private struct PathSegment
+    {
+        public Vector3 start;
+        public Vector3 control;
+        public Vector3 end;
+        public bool curved;
+        public float length;
+    }
 
-    private bool curvedSegment;
-    private float segmentProgress;
-    private float segmentLength;
+    private readonly List<PathSegment> path = new();
+
+    private int pathIndex;
+    private float pathProgress;
 
     public static int ActiveProductCount { get; private set; }
 
@@ -64,9 +71,9 @@ public class ProductMover : MonoBehaviour
             registeredAsActive = true;
         }
 
-        Vector2Int cell = currentModule.CurrentCell.Value;
-
         transform.SetParent(grid.transform, true);
+
+        Vector2Int cell = currentModule.CurrentCell.Value;
 
         transform.position = grid.GetCellCenterWorld(
             cell.x,
@@ -79,46 +86,90 @@ public class ProductMover : MonoBehaviour
 
     private void Update()
     {
-        if (!isMoving || targetModule == null)
+        if (!isMoving || pathIndex >= path.Count)
             return;
 
-        float distanceThisFrame = speed * Time.deltaTime;
+        float remainingDistance = speed * Time.deltaTime;
 
-        segmentProgress +=
-            distanceThisFrame / Mathf.Max(segmentLength, 0.0001f);
-
-        segmentProgress = Mathf.Clamp01(segmentProgress);
-
-        Vector3 position = EvaluateSegment(segmentProgress);
-
-        transform.localPosition = position;
-
-        if (rotateWithPath)
+        // Consume movement distance across path segments.
+        while (remainingDistance > 0f &&
+               isMoving &&
+               pathIndex < path.Count)
         {
-            Vector3 direction =
-                EvaluateDirection(segmentProgress);
+            PathSegment segment = path[pathIndex];
 
-            if (direction.sqrMagnitude > 0.0001f)
+            float remainingOnSegment =
+                segment.length * (1f - pathProgress);
+
+            float movement =
+                Mathf.Min(remainingDistance, remainingOnSegment);
+
+            pathProgress +=
+                movement / Mathf.Max(segment.length, 0.0001f);
+
+            pathProgress = Mathf.Clamp01(pathProgress);
+
+            transform.localPosition =
+                Evaluate(segment, pathProgress);
+
+            if (rotateWithPath)
             {
-                transform.localRotation =
-                    Quaternion.LookRotation(
+                Vector3 direction =
+                    EvaluateDirection(segment, pathProgress);
+
+                if (direction.sqrMagnitude > 0.0001f)
+                {
+                    Quaternion pathRotation = Quaternion.LookRotation(
                         direction.normalized,
                         Vector3.up
                     );
-            }
-        }
 
-        if (segmentProgress >= 1f)
-        {
-            currentModule = targetModule;
-            FindNextModule();
+                    transform.localRotation =
+                        pathRotation * Quaternion.Euler(0f, 90f, 0f);
+                }
+            }
+
+            remainingDistance -= movement;
+
+            if (pathProgress >= 0.9999f)
+            {
+                pathIndex++;
+                pathProgress = 0f;
+
+                if (pathIndex >= path.Count)
+                {
+                    currentModule = targetModule;
+                    FindNextModule();
+                }
+            }
         }
     }
 
+
     private void FindNextModule()
     {
-        targetModule =
+        ConveyorModule next =
             connectionManager.GetNextModule(currentModule);
+
+        ConveyorModule corner = null;
+
+        // Look ahead through a corner so we can
+        // build the complete entry-to-exit curve.
+        if (smoothCorners && next != null && next.IsCorner)
+        {
+            ConveyorModule afterCorner =
+                connectionManager.GetNextModule(next);
+
+            if (afterCorner != null &&
+                next.CurrentCell.HasValue &&
+                afterCorner.CurrentCell.HasValue)
+            {
+                corner = next;
+                next = afterCorner;
+            }
+        }
+
+        targetModule = next;
 
         if (targetModule == null)
         {
@@ -147,7 +198,7 @@ public class ProductMover : MonoBehaviour
             return;
         }
 
-        SetupMovementSegment();
+        BuildPathToNextModule(corner);
 
         isMoving = true;
 
@@ -157,13 +208,20 @@ public class ProductMover : MonoBehaviour
         );
     }
 
-    private void SetupMovementSegment()
+
+
+
+    private void BuildPathToNextModule(ConveyorModule corner)
     {
-        segmentStart = transform.localPosition;
+        path.Clear();
+        pathIndex = 0;
+        pathProgress = 0f;
+
+        Vector3 start = transform.localPosition;
 
         Vector2Int targetCell = targetModule.CurrentCell.Value;
 
-        segmentEnd = grid.transform.InverseTransformPoint(
+        Vector3 end = grid.transform.InverseTransformPoint(
             grid.GetCellCenterWorld(
                 targetCell.x,
                 targetCell.y,
@@ -171,100 +229,137 @@ public class ProductMover : MonoBehaviour
             )
         );
 
-        curvedSegment = false;
-        curveControl = (segmentStart + segmentEnd) * 0.5f;
-
-        // Apply a curved entry path when moving
-        // into a corner conveyor.
-        if (smoothCorners && targetModule.IsCorner)
+        // Normal straight movement.
+        if (corner == null)
         {
-            Vector3 incoming = new Vector3(
-                -targetModule.InputDirection.x,
-                0f,
-                -targetModule.InputDirection.y
-            );
-
-            Vector3 outgoing = new Vector3(
-                targetModule.OutputDirection.x,
-                0f,
-                targetModule.OutputDirection.y
-            );
-
-            float cellSize =
-                Vector3.Distance(segmentStart, segmentEnd);
-
-            Vector3 cornerCenter = segmentEnd;
-
-            // Bend the final portion of the approach
-            // toward the corner's outgoing direction.
-            curveControl =
-                cornerCenter -
-                incoming * cellSize * cornerRadiusFactor -
-                outgoing * cellSize * cornerRadiusFactor;
-
-            curvedSegment = true;
+            AddStraight(start, end);
+            return;
         }
 
-        segmentProgress = 0f;
+        Vector2Int cornerCell = corner.CurrentCell.Value;
 
-        segmentLength = EstimateSegmentLength();
+        Vector3 center = grid.transform.InverseTransformPoint(
+            grid.GetCellCenterWorld(
+                cornerCell.x,
+                cornerCell.y,
+                heightAboveBoard
+            )
+        );
+
+        float halfCell = grid.CellSize * 0.5f;
+
+        Vector3 input = ToVector3(corner.InputDirection);
+        Vector3 output = ToVector3(corner.OutputDirection);
+
+        // Actual entry and exit edges of the corner.
+        Vector3 entry = center + input * halfCell;
+        Vector3 exit = center + output * halfCell;
+
+        // 1. Approach the corner in a straight line.
+        AddStraight(start, entry);
+
+        // 2. Follow the complete 90-degree turn.
+        // The centre acts as the Bezier control point,
+        // giving the curve correct entry/exit tangents.
+        AddCurve(entry, center, exit);
+
+        // 3. Leave the corner toward the next conveyor.
+        AddStraight(exit, end);
     }
 
-    private Vector3 EvaluateSegment(float t)
+
+
+    private Vector3 ToVector3(Vector2Int direction)
     {
-        if (!curvedSegment)
+        return new Vector3(
+            direction.x,
+            0f,
+            direction.y
+        );
+    }
+
+    private void AddStraight(Vector3 start, Vector3 end)
+    {
+        float length = Vector3.Distance(start, end);
+
+        if (length < 0.0001f)
+            return;
+
+        path.Add(new PathSegment
+        {
+            start = start,
+            control = (start + end) * 0.5f,
+            end = end,
+            curved = false,
+            length = length
+        });
+    }
+
+    private void AddCurve(
+        Vector3 start,
+        Vector3 control,
+        Vector3 end)
+    {
+        PathSegment segment = new PathSegment
+        {
+            start = start,
+            control = control,
+            end = end,
+            curved = true
+        };
+
+        segment.length = EstimateLength(segment);
+
+        path.Add(segment);
+    }
+
+    private Vector3 Evaluate(PathSegment segment, float t)
+    {
+        if (!segment.curved)
         {
             return Vector3.Lerp(
-                segmentStart,
-                segmentEnd,
+                segment.start,
+                segment.end,
                 t
             );
         }
 
-        float oneMinusT = 1f - t;
+        float u = 1f - t;
 
-        return oneMinusT * oneMinusT * segmentStart +
-               2f * oneMinusT * t * curveControl +
-               t * t * segmentEnd;
+        return u * u * segment.start +
+               2f * u * t * segment.control +
+               t * t * segment.end;
     }
 
-    private Vector3 EvaluateDirection(float t)
+    private Vector3 EvaluateDirection(
+        PathSegment segment,
+        float t)
     {
-        if (!curvedSegment)
-            return segmentEnd - segmentStart;
+        if (!segment.curved)
+            return segment.end - segment.start;
 
         return
-            2f * (1f - t) * (curveControl - segmentStart) +
-            2f * t * (segmentEnd - curveControl);
+            2f * (1f - t) *
+            (segment.control - segment.start) +
+            2f * t *
+            (segment.end - segment.control);
     }
 
-    private float EstimateSegmentLength()
+    private float EstimateLength(PathSegment segment)
     {
-        if (!curvedSegment)
-        {
-            return Vector3.Distance(
-                segmentStart,
-                segmentEnd
-            );
-        }
-
         float length = 0f;
-        Vector3 previous = EvaluateSegment(0f);
+        Vector3 previous = segment.start;
 
-        const int samples = 12;
+        const int samples = 16;
 
         for (int i = 1; i <= samples; i++)
         {
             float t = i / (float)samples;
 
-            Vector3 current = EvaluateSegment(t);
+            Vector3 next = Evaluate(segment, t);
 
-            length += Vector3.Distance(
-                previous,
-                current
-            );
-
-            previous = current;
+            length += Vector3.Distance(previous, next);
+            previous = next;
         }
 
         return Mathf.Max(length, 0.0001f);
