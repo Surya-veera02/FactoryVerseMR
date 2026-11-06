@@ -23,7 +23,7 @@ public class FactoryLayoutReset : MonoBehaviour
     [SerializeField] private ConveyorModule shippingModule;
 
     [Header("Default Layout")]
-    [SerializeField] private int defaultColumns = 6;
+    [SerializeField] private int defaultColumns = 4;
     [SerializeField] private int defaultRows = 4;
 
     // Set these to the original source/shipping

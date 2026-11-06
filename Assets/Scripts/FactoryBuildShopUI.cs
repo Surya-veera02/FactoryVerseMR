@@ -19,7 +19,7 @@ public class FactoryBuildShopUI : MonoBehaviour
     [SerializeField] private Transform factoryBoard;
 
     [Header("Level 1 Inventory Limits")]
-    [SerializeField] private int maxConveyors = 5;
+    //[SerializeField] private int maxConveyors = 5;
     [SerializeField] private int maxPackingMachines = 1;
 
     [Header("Shop Spawning")]
@@ -88,34 +88,34 @@ public class FactoryBuildShopUI : MonoBehaviour
         }
 
 
-        int placedConveyors = 0;
+        //int placedConveyors = 0;
 
-        ConveyorModule[] conveyors =
-            factoryBoard.GetComponentsInChildren<ConveyorModule>();
+        //ConveyorModule[] conveyors =
+        //    factoryBoard.GetComponentsInChildren<ConveyorModule>();
 
 
-        foreach (ConveyorModule conveyor in conveyors)
-        {
-            if (!conveyor.CurrentCell.HasValue)
-                continue;
+        //foreach (ConveyorModule conveyor in conveyors)
+        //{
+        //    if (!conveyor.CurrentCell.HasValue)
+        //        continue;
 
-            // Fixed stations do not consume shop inventory.
-            if (conveyor.GetComponent<FactorySourceStation>() != null ||
-                conveyor.GetComponent<FactoryShippingStation>() != null)
-                continue;
+        //    // Fixed stations do not consume shop inventory.
+        //    if (conveyor.GetComponent<FactorySourceStation>() != null ||
+        //        conveyor.GetComponent<FactoryShippingStation>() != null)
+        //        continue;
 
-            placedConveyors++;
-        }
+        //    placedConveyors++;
+        //}
 
 
         bool canBuild = CanBuild();
 
         // Update conveyor inventory text.
-        if (conveyorCountText != null)
-        {
-            conveyorCountText.text =
-                $"CONVEYORS: {placedConveyors}/{maxConveyors}";
-        }
+        //if (conveyorCountText != null)
+        //{
+        //    conveyorCountText.text =
+        //        $"CONVEYORS: {placedConveyors}/{maxConveyors}";
+        //}
 
         // Update packing machine inventory text.
         if (packingCountText != null)
@@ -128,7 +128,6 @@ public class FactoryBuildShopUI : MonoBehaviour
 
         bool canAddConveyor =
             canBuild &&
-            placedConveyors < maxConveyors &&
             shopSpawner != null &&
             !shopSpawner.HasPendingModule;
 
@@ -338,4 +337,19 @@ public class FactoryBuildShopUI : MonoBehaviour
             cancelPurchaseButton.onClick.RemoveListener(CancelPurchase);
 
     }
+
+    public void UnregisterPackingMachinePlacement()
+    {
+        placedPackingMachines =
+            Mathf.Max(0, placedPackingMachines - 1);
+
+        SelectedModule = BuildModuleType.None;
+        SetSelectionText("PACKING MACHINE RETURNED");
+
+        Debug.Log(
+            "[Build Shop] Packing machine returned. " +
+            "Inventory slot restored."
+        );
+    }
+
 }

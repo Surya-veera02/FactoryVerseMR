@@ -55,7 +55,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ConveyorModule
   placementManager: {fileID: 0}
   quarterTurns: 0
-  autoSnapOnStart: 0
+  autoSnapOnStart: 1
   conveyorShape: 1
   cornerTurn: 0
 --- !u!54 &2850075685988311304
@@ -249,6 +249,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConveyorGrabSnap
   maxLiftHeight: 0.35
+  returnZone: {fileID: 0}
+  creditManager: {fileID: 0}
+  productionController: {fileID: 0}
 --- !u!1 &417394200283902916
 GameObject:
   m_ObjectHideFlags: 0

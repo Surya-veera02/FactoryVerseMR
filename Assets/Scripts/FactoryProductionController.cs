@@ -264,7 +264,7 @@ public class FactoryProductionController : MonoBehaviour
 
             if (grab != null)
             {
-                grab.enabled = !locked && !packing.IsPlaced;
+                grab.enabled = !locked; //&& !packing.IsPlaced;
             }
         }
 

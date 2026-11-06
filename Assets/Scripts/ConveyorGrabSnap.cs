@@ -25,12 +25,31 @@ public class ConveyorGrabSnap : MonoBehaviour
     [Header("Grab Movement")]
     [SerializeField] private float maxLiftHeight = 0.35f;
 
+
+    [Header("Return Bin")]
+    [SerializeField] private FactoryReturnZone returnZone;
+    [SerializeField] private FactoryCreditManager creditManager;
+    [SerializeField] private FactoryProductionController productionController;
+
+
     private void Awake()
     {
         grabInteractable = GetComponent<XRGrabInteractable>();
         conveyorModule = GetComponent<ConveyorModule>();
         grid = GetComponentInParent<FactoryGrid>();
         rb = GetComponent<Rigidbody>();
+
+
+        if (returnZone == null)
+            returnZone = FindFirstObjectByType<FactoryReturnZone>();
+
+        if (creditManager == null)
+            creditManager = GetComponentInParent<FactoryCreditManager>();
+
+        if (productionController == null)
+            productionController =
+                GetComponentInParent<FactoryProductionController>();
+
     }
 
     private void OnEnable()
@@ -151,6 +170,63 @@ public class ConveyorGrabSnap : MonoBehaviour
             releasePosition,
             releaseRotation
         );
+
+
+        // Check whether this conveyor was dropped into the return bin.
+        if (returnZone != null &&
+            returnZone.ContainsPoint(releasePosition))
+        {
+            bool canReturn =
+                productionController != null &&
+                productionController.CurrentState !=
+                    FactoryProductionController.ProductionState.Running &&
+                productionController.CurrentState !=
+                    FactoryProductionController.ProductionState.Stopping;
+
+            FactoryPurchaseInfo purchase =
+                GetComponent<FactoryPurchaseInfo>();
+
+            // Only purchased conveyors can be returned.
+            // Fixed source and shipping stations have no purchase record.
+            if (canReturn && purchase != null)
+            {
+                ShopPendingPlacement pending =
+                    GetComponent<ShopPendingPlacement>();
+
+                if (pending != null && pending.IsPending)
+                {
+                    FactoryShopSpawner shop =
+                        GetComponentInParent<FactoryShopSpawner>();
+
+                    // Pending modules are managed separately by the shop.
+                    // Do not destroy them here.
+                    Debug.Log(
+                        "[Return Bin] Pending module: use Cancel Purchase."
+                    );
+                }
+                else
+                {
+                    FactoryPlacementManager placement =
+                        GetComponentInParent<FactoryPlacementManager>();
+
+                    if (placement != null)
+                        placement.Release(conveyorModule);
+
+                    purchase.TryRefund(creditManager);
+
+                    Debug.Log(
+                        $"[Return Bin] Conveyor returned: {name}"
+                    );
+
+                    gameObject.SetActive(false);
+                    Destroy(gameObject);
+
+                    snapCoroutine = null;
+                    yield break;
+                }
+            }
+        }
+
 
         // Determine the nearest 90-degree orientation.
         conveyorModule.SetQuarterTurnsFromWorldRotation(

@@ -16,6 +16,17 @@ public class PackingMachinePlacement : MonoBehaviour
     [SerializeField] private float heightOffset = 0f;
     [SerializeField] private float maxLiftHeight = 0.35f;
 
+
+    [Header("Return Bin")]
+    [SerializeField] private FactoryReturnZone returnZone;
+    [SerializeField] private FactoryCreditManager creditManager;
+    [SerializeField] private FactoryProductionController productionController;
+
+    private Vector3 lastValidPosition;
+    private Quaternion lastValidRotation;
+    private bool hasValidPlacement;
+
+
     private XRGrabInteractable grabInteractable;
     private Rigidbody rb;
     private ShopPendingPlacement pendingPlacement;
@@ -41,6 +52,17 @@ public class PackingMachinePlacement : MonoBehaviour
         if (placementManager == null)
             placementManager =
                 GetComponentInParent<FactoryPlacementManager>();
+
+        if (returnZone == null)
+            returnZone = FindFirstObjectByType<FactoryReturnZone>();
+
+        if (creditManager == null)
+            creditManager = GetComponentInParent<FactoryCreditManager>();
+
+        if (productionController == null)
+            productionController =
+                GetComponentInParent<FactoryProductionController>();
+
     }
 
     private void OnEnable()
@@ -59,12 +81,38 @@ public class PackingMachinePlacement : MonoBehaviour
 
         isGrabbed = false;
         handAttach = null;
+
+
+        if (productionController != null)
+        {
+            var state = productionController.CurrentState;
+
+            if (state ==
+                    FactoryProductionController.ProductionState.Running ||
+                state ==
+                    FactoryProductionController.ProductionState.Stopping)
+            {
+                RestoreLastValidPlacement();
+                return;
+            }
+        }
+
     }
 
     private void OnGrabStarted(SelectEnterEventArgs args)
     {
-        if (isPlaced)
-            return;
+
+        if (productionController != null)
+        {
+            var state = productionController.CurrentState;
+
+            if (state ==
+                    FactoryProductionController.ProductionState.Running ||
+                state ==
+                    FactoryProductionController.ProductionState.Stopping)
+                return;
+        }
+
 
         if (snapCoroutine != null)
         {
@@ -137,6 +185,48 @@ public class PackingMachinePlacement : MonoBehaviour
 
         transform.position = releasePosition;
 
+        // Check the return bin before checking grid placement.
+        if (returnZone != null &&
+            returnZone.ContainsPoint(releasePosition))
+        {
+            bool canReturn =
+                productionController != null &&
+                productionController.CurrentState !=
+                    FactoryProductionController.ProductionState.Running &&
+                productionController.CurrentState !=
+                    FactoryProductionController.ProductionState.Stopping;
+
+            FactoryPurchaseInfo purchase =
+                GetComponent<FactoryPurchaseInfo>();
+
+            if (canReturn && purchase != null)
+            {
+                ShopPendingPlacement returnPending =
+                    GetComponent<ShopPendingPlacement>();
+
+                // Only installed machines can be returned here.
+                if (returnPending == null || !returnPending.IsPending)
+                {
+                    if (purchase.TryRefund(creditManager))
+                    {
+                        FactoryBuildShopUI shopUI =
+                            FindFirstObjectByType<FactoryBuildShopUI>();
+
+                        if (shopUI != null)
+                            shopUI.UnregisterPackingMachinePlacement();
+
+                        gameObject.SetActive(false);
+                        Destroy(gameObject);
+
+                        snapCoroutine = null;
+                        yield break;
+                    }
+                }
+            }
+        }
+
+
+
         if (grid == null || placementManager == null ||
             !grid.TryGetCell(
                 transform.position,
@@ -146,6 +236,7 @@ public class PackingMachinePlacement : MonoBehaviour
             Debug.LogWarning(
                 "[Packing Machine] Released outside grid.");
             snapCoroutine = null;
+            RestoreLastValidPlacement();
             yield break;
         }
 
@@ -159,6 +250,7 @@ public class PackingMachinePlacement : MonoBehaviour
             Debug.LogWarning(
                 "[Packing Machine] Must be placed over a conveyor.");
             snapCoroutine = null;
+            RestoreLastValidPlacement();
             yield break;
         }
 
@@ -175,10 +267,16 @@ public class PackingMachinePlacement : MonoBehaviour
         rb.rotation = transform.rotation;
 
 
+
         isPlaced = true;
 
-        // Packing machine is fixed after successful placement.
-        grabInteractable.enabled = false;
+        lastValidPosition = targetPosition;
+        lastValidRotation = targetRotation;
+        hasValidPlacement = true;
+
+        // Keep grabbing enabled in build mode.
+        grabInteractable.enabled = true;
+
 
         // Get the component at the moment placement succeeds,
         // rather than relying on an earlier Awake reference.
@@ -227,6 +325,30 @@ public class PackingMachinePlacement : MonoBehaviour
 
         rb.position = targetPosition;
         rb.rotation = targetRotation;
+
+        lastValidPosition = targetPosition;
+        lastValidRotation = targetRotation;
+        hasValidPlacement = true;
+
     }
+
+    private void RestoreLastValidPlacement()
+    {
+        if (!hasValidPlacement)
+            return;
+
+        transform.SetPositionAndRotation(
+            lastValidPosition,
+            lastValidRotation
+        );
+
+        rb.position = lastValidPosition;
+        rb.rotation = lastValidRotation;
+
+        Debug.Log(
+            "[Packing Machine] Returned to previous conveyor."
+        );
+    }
+
 
 }

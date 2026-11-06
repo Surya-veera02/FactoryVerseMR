@@ -4,7 +4,7 @@ using UnityEngine;
 public class FactoryGrid : MonoBehaviour
 {
     [Header("Grid Settings")]
-    [SerializeField] private int columns = 6;
+    [SerializeField] private int columns = 4;
     [SerializeField] private int rows = 4;
     [SerializeField] private float cellSize = 0.12f;
 
