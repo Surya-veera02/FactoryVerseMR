@@ -131,6 +131,21 @@ public class FactorySourceStation : MonoBehaviour
             return false;
         }
 
+
+        ProductQuality quality =
+            product.GetComponent<ProductQuality>();
+
+        if (quality != null)
+        {
+            quality.AssignRandomQuality();
+        }
+        else
+        {
+            Debug.LogWarning(
+                "[Source] ProductQuality component missing!"
+            );
+        }
+
         productsSpawned++;
         nextSpawnTime = Time.time + pokeCooldown;
 

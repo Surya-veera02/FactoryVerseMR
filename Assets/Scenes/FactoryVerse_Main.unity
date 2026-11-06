@@ -695,6 +695,10 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3851368273060038433, guid: 17bbcd18d328ef04a8506c0335c8e753, type: 3}
+      propertyPath: quarterTurns
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4610156577547464267, guid: 17bbcd18d328ef04a8506c0335c8e753, type: 3}
       propertyPath: returnZone
       value: 
@@ -2628,6 +2632,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FactoryShippingStation
   targetDeliveries: 10
+  creditManager: {fileID: 0}
 --- !u!114 &630522932 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3851368273060038433, guid: 17bbcd18d328ef04a8506c0335c8e753, type: 3}
@@ -6557,8 +6562,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FactoryPerimeterAnchor
   grid: {fileID: 1969260294}
   anchorSide: 2
-  edgeGap: 0.15
-  alongEdgeOffset: -0.5
+  edgeGap: 0.2
+  alongEdgeOffset: -0.25
   heightOffset: 0
   updateContinuously: 0
 --- !u!1001 &1430914498
