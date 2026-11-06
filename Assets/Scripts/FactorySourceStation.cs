@@ -21,6 +21,8 @@ public class FactorySourceStation : MonoBehaviour
     private bool productionEnabled;
     private float nextSpawnTime;
 
+    [SerializeField]
+    private FactoryDifficultyManager difficultyManager;
     public int ProductsSpawned => productsSpawned;
     //public int MaxProducts => maxProducts;
     public bool IsProducing => productionEnabled;
@@ -38,6 +40,10 @@ public class FactorySourceStation : MonoBehaviour
                 GetComponentInParent<ConveyorConnectionManager>();
         if (creditManager == null)
             creditManager = GetComponentInParent<FactoryCreditManager>();
+
+        if (difficultyManager == null)
+            difficultyManager =
+                GetComponentInParent<FactoryDifficultyManager>();
     }
 
     [ContextMenu("Start Production")]
@@ -131,14 +137,23 @@ public class FactorySourceStation : MonoBehaviour
             return false;
         }
 
-
         ProductQuality quality =
             product.GetComponent<ProductQuality>();
 
         if (quality != null)
         {
-            quality.AssignRandomQuality();
+            if (difficultyManager != null)
+            {
+                quality.AssignRandomQuality(
+                    difficultyManager.CurrentDefectProbability
+                );
+            }
+            else
+            {
+                quality.AssignRandomQuality();
+            }
         }
+
         else
         {
             Debug.LogWarning(

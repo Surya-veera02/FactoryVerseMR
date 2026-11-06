@@ -26,6 +26,10 @@ public class FactoryLayoutReset : MonoBehaviour
     [SerializeField] private int defaultColumns = 4;
     [SerializeField] private int defaultRows = 4;
 
+    [Header("Difficulty")]
+    [SerializeField]
+    private FactoryDifficultyManager difficultyManager;
+
     // Set these to the original source/shipping
     // cells in your default 6x4 factory layout.
     [SerializeField] private Vector2Int defaultSourceCell;
@@ -186,6 +190,25 @@ public class FactoryLayoutReset : MonoBehaviour
         // 8. Refresh the connection graph and route status.
         connections.RebuildConnections();
         controller.ValidateRoute();
+
+        // 9. Restore the starting credit balance.
+        if (creditManager != null)
+        {
+            creditManager.ResetCredits();
+        }
+
+        // 10. Restore Level 1 difficulty.
+        if (difficultyManager != null)
+        {
+            difficultyManager.ResetDifficulty();
+        }
+
+        Debug.Log(
+            "[Layout Reset] Complete. " +
+            $"Grid restored to {defaultColumns}x{defaultRows}. " +
+            "Credits and difficulty restored."
+        );
+
 
         Debug.Log(
             "[Layout Reset] Complete. " +

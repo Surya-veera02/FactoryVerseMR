@@ -26,6 +26,9 @@ public class ProductGrabReturn : MonoBehaviour
     private Vector3 savedPosition;
     private Quaternion savedRotation;
 
+    [SerializeField]
+    private FactoryDifficultyManager difficultyManager;
+
     private bool isGrabbed;
 
     private void Awake()
@@ -40,6 +43,10 @@ public class ProductGrabReturn : MonoBehaviour
 
         if (creditManager == null)
             creditManager = FindFirstObjectByType<FactoryCreditManager>();
+
+        if (difficultyManager == null)
+            difficultyManager =
+                FindFirstObjectByType<FactoryDifficultyManager>();
 
         rb.isKinematic = true;
         rb.useGravity = false;
@@ -132,13 +139,30 @@ public class ProductGrabReturn : MonoBehaviour
                     $"Refund: +{creditManager.productionCost} CR"
                 );
             }
+
             else
             {
-                Debug.Log(
-                    "[Quality Control] Normal product discarded. " +
-                    "No refund."
+                int penalty = difficultyManager != null
+                    ? difficultyManager.WrongRejectionPenalty
+                    : 0;
+
+                if (creditManager != null && penalty > 0)
+                {
+                    int deduction = Mathf.Min(
+                        penalty,
+                        creditManager.currentCredits
+                    );
+
+                    if (deduction > 0)
+                        creditManager.TrySpend(deduction);
+                }
+
+                Debug.LogWarning(
+                    "[Quality Control] Normal product discarded! " +
+                    $"Penalty: -{penalty} CR"
                 );
             }
+
 
             mover.UnregisterProduct();
 
