@@ -13,6 +13,11 @@ public class FactoryLayoutReset : MonoBehaviour
     [SerializeField] private FactoryBuildShopUI shopUI;
     [SerializeField] private FactoryShopSpawner shopSpawner;
 
+
+    [Header("Credit Economy")]
+    [SerializeField] private FactoryCreditManager creditManager;
+
+
     [Header("Fixed Stations")]
     [SerializeField] private ConveyorModule sourceModule;
     [SerializeField] private ConveyorModule shippingModule;
@@ -86,19 +91,24 @@ public class FactoryLayoutReset : MonoBehaviour
         ConveyorModule[] modules =
             GetComponentsInChildren<ConveyorModule>(true);
 
+
         foreach (ConveyorModule module in modules)
         {
             if (module == null)
                 continue;
 
-            // Never remove fixed stations.
             if (module == sourceModule ||
                 module == shippingModule)
                 continue;
 
-            // Only remove installed conveyor modules.
             if (!module.CurrentCell.HasValue)
                 continue;
+
+            FactoryPurchaseInfo purchase =
+                module.GetComponent<FactoryPurchaseInfo>();
+
+            if (purchase != null)
+                purchase.TryRefund(creditManager);
 
             module.gameObject.SetActive(false);
             placementManager.Release(module);
@@ -106,18 +116,27 @@ public class FactoryLayoutReset : MonoBehaviour
             Destroy(module.gameObject);
         }
 
+
         // 3. Remove installed packing machines.
         PackingMachinePlacement[] machines =
             GetComponentsInChildren<PackingMachinePlacement>(true);
+
 
         foreach (PackingMachinePlacement machine in machines)
         {
             if (machine == null || !machine.IsPlaced)
                 continue;
 
+            FactoryPurchaseInfo purchase =
+                machine.GetComponent<FactoryPurchaseInfo>();
+
+            if (purchase != null)
+                purchase.TryRefund(creditManager);
+
             machine.gameObject.SetActive(false);
             Destroy(machine.gameObject);
         }
+
 
         // 4. Clear the old cell registry.
         placementManager.ClearOccupancyForLayoutReset();

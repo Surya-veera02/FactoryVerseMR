@@ -15,6 +15,11 @@ public class FactoryShopSpawner : MonoBehaviour
     [SerializeField] private Transform factoryBoard;
     [SerializeField] private Transform pickupPoint;
 
+
+    [Header("Credit Economy")]
+    [SerializeField] private FactoryCreditManager creditManager;
+
+
     [Header("Debug")]
     [SerializeField] private bool logSpawning = true;
 
@@ -24,20 +29,31 @@ public class FactoryShopSpawner : MonoBehaviour
 
     public bool TrySpawnConveyor()
     {
-        return TrySpawn(conveyorPrefab, "Conveyor");
+        return TrySpawn(
+            conveyorPrefab,
+            "Conveyor",
+            creditManager != null
+                ? creditManager.straightConveyorCost : 0
+        );
     }
 
     public bool TrySpawnPackingMachine()
     {
-        return TrySpawn(packingMachinePrefab, "Packing Machine");
+        return TrySpawn(
+            packingMachinePrefab,
+            "Packing Machine",
+            creditManager != null
+                ? creditManager.packingMachineCost : 0
+        );
     }
-
 
     public bool TrySpawnCornerRight()
     {
         return TrySpawn(
             cornerRightPrefab,
-            "Right Corner Conveyor"
+            "Right Corner Conveyor",
+            creditManager != null
+                ? creditManager.cornerConveyorCost : 0
         );
     }
 
@@ -45,21 +61,27 @@ public class FactoryShopSpawner : MonoBehaviour
     {
         return TrySpawn(
             cornerLeftPrefab,
-            "Left Corner Conveyor"
+            "Left Corner Conveyor",
+            creditManager != null
+                ? creditManager.cornerConveyorCost : 0
         );
     }
 
 
+
     private bool TrySpawn(
         GameObject prefab,
-        string moduleName)
+        string moduleName,
+        int price)
     {
         if (prefab == null ||
             factoryBoard == null ||
-            pickupPoint == null)
+            pickupPoint == null ||
+            creditManager == null)
         {
             Debug.LogError(
-                "[Shop] Missing prefab, board, or pickup point."
+                "[Shop] Missing prefab, board, pickup point " +
+                "or credit manager."
             );
             return false;
         }
@@ -72,9 +94,15 @@ public class FactoryShopSpawner : MonoBehaviour
             return false;
         }
 
-        // Instantiate inactive so registration and XR components
-        // cannot run before we configure the module.
-        bool prefabWasActive = prefab.activeSelf;
+        if (!creditManager.CanAfford(price))
+        {
+            Debug.LogWarning(
+                $"[Shop] Not enough credits for {moduleName}. " +
+                $"Required: {price}, " +
+                $"Available: {creditManager.currentCredits}"
+            );
+            return false;
+        }
 
         GameObject instance = Instantiate(
             prefab,
@@ -89,32 +117,41 @@ public class FactoryShopSpawner : MonoBehaviour
             instance.GetComponent<ConveyorModule>();
 
         if (conveyor != null)
-        {
             conveyor.SetAutoSnapOnStart(false);
-        }
 
-        // Add and initialize the placement component.
+        FactoryPurchaseInfo purchase =
+            instance.GetComponent<FactoryPurchaseInfo>();
+
+        if (purchase == null)
+            purchase = instance.AddComponent<FactoryPurchaseInfo>();
+
+        purchase.Initialize(price);
+
         ShopPendingPlacement pendingPlacement =
             instance.GetComponent<ShopPendingPlacement>();
 
         if (pendingPlacement == null)
-        {
             pendingPlacement =
                 instance.AddComponent<ShopPendingPlacement>();
-        }
 
         pendingPlacement.Initialize(this);
 
-        // Register pending instance before activation.
-        pendingModule = instance;
+        // Charge only after the instance has been created.
+        if (!creditManager.TrySpend(price))
+        {
+            Destroy(instance);
+            return false;
+        }
 
+        pendingModule = instance;
         instance.SetActive(true);
 
         if (logSpawning)
         {
             Debug.Log(
-                $"[Shop] Spawned pending {moduleName}: " +
-                $"{instance.name}"
+                $"[Shop] Purchased {moduleName} " +
+                $"for {price} credits. " +
+                $"Balance: {creditManager.currentCredits}"
             );
         }
 
@@ -126,10 +163,18 @@ public class FactoryShopSpawner : MonoBehaviour
         if (pendingModule == null)
             return;
 
+        FactoryPurchaseInfo purchase =
+            pendingModule.GetComponent<FactoryPurchaseInfo>();
+
+        if (purchase != null)
+            purchase.TryRefund(creditManager);
+
         Destroy(pendingModule);
         pendingModule = null;
 
-        Debug.Log("[Shop] Pending module cancelled.");
+        Debug.Log(
+            "[Shop] Pending module cancelled and refunded."
+        );
     }
 
 

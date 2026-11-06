@@ -25,6 +25,11 @@ public class FactoryBuildShopUI : MonoBehaviour
     [Header("Shop Spawning")]
     [SerializeField] private FactoryShopSpawner shopSpawner;
 
+    [Header("Credit Economy")]
+    [SerializeField] private FactoryCreditManager creditManager;
+    [SerializeField] private TMP_Text creditBalanceText;
+
+
     [Header("UI")]
     [SerializeField] private TMP_Text conveyorCountText;
     [SerializeField] private TMP_Text packingCountText;
@@ -36,6 +41,11 @@ public class FactoryBuildShopUI : MonoBehaviour
     [Header("Corner Conveyor Buttons")]
     [SerializeField] private Button cornerRightSelectButton;
     [SerializeField] private Button cornerLeftSelectButton;
+
+
+    [Header("Cancel Purchase")]
+    [SerializeField] private Button cancelPurchaseButton;
+
 
     public BuildModuleType SelectedModule { get; private set; }
         = BuildModuleType.None;
@@ -58,6 +68,10 @@ public class FactoryBuildShopUI : MonoBehaviour
 
         if (cornerLeftSelectButton != null)
             cornerLeftSelectButton.onClick.AddListener(SelectCornerLeft);
+
+        if (cancelPurchaseButton != null)
+            cancelPurchaseButton.onClick.AddListener(CancelPurchase);
+
     }
 
 
@@ -65,6 +79,14 @@ public class FactoryBuildShopUI : MonoBehaviour
     {
         if (controller == null || factoryBoard == null)
             return;
+
+        // Display the available factory credits.
+        if (creditBalanceText != null && creditManager != null)
+        {
+            creditBalanceText.text =
+                $"CREDITS: {creditManager.currentCredits}";
+        }
+
 
         int placedConveyors = 0;
 
@@ -103,34 +125,57 @@ public class FactoryBuildShopUI : MonoBehaviour
                 $"{placedPackingMachines}/{maxPackingMachines}";
         }
 
-        // All conveyor types share the same inventory limit.
+
         bool canAddConveyor =
-            canBuild && placedConveyors < maxConveyors;
+            canBuild &&
+            placedConveyors < maxConveyors &&
+            shopSpawner != null &&
+            !shopSpawner.HasPendingModule;
+
 
         // Straight conveyor button.
         if (conveyorSelectButton != null)
         {
-            conveyorSelectButton.interactable = canAddConveyor;
+            conveyorSelectButton.interactable =
+    canAddConveyor &&
+    creditManager != null &&
+    creditManager.CanAfford(
+        creditManager.straightConveyorCost);
         }
 
         // Right corner conveyor button.
         if (cornerRightSelectButton != null)
         {
-            cornerRightSelectButton.interactable = canAddConveyor;
+            cornerRightSelectButton.interactable =
+    canAddConveyor &&
+    creditManager != null &&
+    creditManager.CanAfford(
+        creditManager.cornerConveyorCost);
         }
 
         // Left corner conveyor button.
         if (cornerLeftSelectButton != null)
         {
-            cornerLeftSelectButton.interactable = canAddConveyor;
+            cornerLeftSelectButton.interactable =
+    canAddConveyor &&
+    creditManager != null &&
+    creditManager.CanAfford(
+        creditManager.cornerConveyorCost);
         }
 
         // Packing machine button.
         if (packingSelectButton != null)
         {
+
             packingSelectButton.interactable =
                 canBuild &&
-                placedPackingMachines < maxPackingMachines;
+                shopSpawner != null &&
+                !shopSpawner.HasPendingModule &&
+                placedPackingMachines < maxPackingMachines &&
+                creditManager != null &&
+                creditManager.CanAfford(
+                    creditManager.packingMachineCost);
+
         }
 
         // Disable build selection during production.
@@ -140,7 +185,28 @@ public class FactoryBuildShopUI : MonoBehaviour
             SelectedModule = BuildModuleType.None;
             SetSelectionText("BUILD MODE UNAVAILABLE");
         }
+
+
+        if (cancelPurchaseButton != null)
+            cancelPurchaseButton.interactable =
+                shopSpawner != null &&
+                shopSpawner.HasPendingModule;
+
     }
+
+
+    private void CancelPurchase()
+    {
+        if (shopSpawner == null ||
+            !shopSpawner.HasPendingModule)
+            return;
+
+        shopSpawner.ClearPendingModule();
+
+        SelectedModule = BuildModuleType.None;
+        SetSelectionText("PURCHASE CANCELLED");
+    }
+
 
     public void ResetLayoutInventory()
     {
@@ -267,5 +333,9 @@ public class FactoryBuildShopUI : MonoBehaviour
 
         if (cornerLeftSelectButton != null)
             cornerLeftSelectButton.onClick.RemoveListener(SelectCornerLeft);
+
+        if (cancelPurchaseButton != null)
+            cancelPurchaseButton.onClick.RemoveListener(CancelPurchase);
+
     }
 }
