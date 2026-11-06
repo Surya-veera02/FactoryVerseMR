@@ -4528,13 +4528,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be6976191e9553642949ae4e1bc0cd60, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FactorySourceStation
-  productPrefab: {fileID: 1499447920386201399, guid: eecbcaaac6704c144b17acc9822eac32, type: 3}
+  productPrefab: {fileID: 5644472997344849970, guid: eecbcaaac6704c144b17acc9822eac32, type: 3}
   sourceConveyor: {fileID: 1015874329}
   grid: {fileID: 1969260294}
   connectionManager: {fileID: 1969260296}
-  maxProducts: 10
   pokeCooldown: 0.5
-  maxActiveProducts: 3
+  creditManager: {fileID: 0}
 --- !u!1 &1059658040
 GameObject:
   m_ObjectHideFlags: 0
@@ -8656,7 +8655,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: SELECT MACHINE
+  m_text: DROP MACHINE
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -10100,7 +10099,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: RightTurn
+  m_text: Right Turn
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

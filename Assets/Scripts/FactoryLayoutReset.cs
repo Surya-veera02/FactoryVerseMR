@@ -61,13 +61,13 @@ public class FactoryLayoutReset : MonoBehaviour
             return;
         }
 
-        if (shopSpawner.HasPendingModule)
-        {
-            Debug.LogWarning(
-                "[Layout Reset] Finish or cancel pending placement."
-            );
-            return;
-        }
+        //if (shopSpawner.HasPendingModule)
+        //{
+        //    Debug.LogWarning(
+        //        "[Layout Reset] Finish or cancel pending placement."
+        //    );
+        //    return;
+        //}
 
         // Validate before modifying the factory.
         if (!grid.IsCellWithinBounds(
@@ -83,6 +83,17 @@ public class FactoryLayoutReset : MonoBehaviour
         }
 
         Debug.Log("[Layout Reset] Starting layout reset.");
+
+
+        if (shopSpawner.HasPendingModule)
+        {
+            shopSpawner.ClearPendingModule();
+
+            Debug.Log(
+                "[Layout Reset] Pending purchase cancelled and refunded."
+            );
+        }
+
 
         // 1. Reset products, production and delivery counters.
         controller.ResetFactory();

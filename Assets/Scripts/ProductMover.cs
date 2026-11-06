@@ -23,6 +23,15 @@ public class ProductMover : MonoBehaviour
     private bool isMoving;
     private bool registeredAsActive;
 
+
+    [Header("Packing Detection")]
+    [SerializeField] private float packingDetectionInterval = 0.05f;
+
+    private float nextPackingCheckTime;
+    private PackingMachinePlacement[] packingMachines;
+    private ProductPackaging packaging;
+
+
     private struct PathSegment
     {
         public Vector3 start;
@@ -82,6 +91,14 @@ public class ProductMover : MonoBehaviour
         );
 
         FindNextModule();
+        
+packaging = GetComponent<ProductPackaging>();
+
+packingMachines =
+    grid.GetComponentsInChildren<PackingMachinePlacement>();
+
+nextPackingCheckTime = 0f;
+
     }
 
     private void Update()
@@ -143,8 +160,62 @@ public class ProductMover : MonoBehaviour
                 }
             }
         }
+        CheckForPackingMachine();
     }
 
+
+    private void CheckForPackingMachine()
+    {
+        if (packaging == null || packaging.IsPacked)
+            return;
+
+        if (Time.time < nextPackingCheckTime)
+            return;
+
+        nextPackingCheckTime =
+            Time.time + packingDetectionInterval;
+
+        if (grid == null ||
+            !grid.TryGetCell(
+                transform.position,
+                out int column,
+                out int row))
+            return;
+
+        Vector2Int productCell =
+            new Vector2Int(column, row);
+
+        if (packingMachines == null)
+            return;
+
+        foreach (PackingMachinePlacement machine in packingMachines)
+        {
+            if (machine == null ||
+                !machine.gameObject.activeInHierarchy ||
+                !machine.IsPlaced)
+                continue;
+
+            if (!grid.TryGetCell(
+                machine.transform.position,
+                out int machineColumn,
+                out int machineRow))
+                continue;
+
+            Vector2Int machineCell =
+                new Vector2Int(machineColumn, machineRow);
+
+            if (productCell != machineCell)
+                continue;
+
+            packaging.Pack();
+
+            Debug.Log(
+                $"[Packing Machine] Packed product at {productCell}"
+            );
+
+            break;
+        }
+    }
 
     private void FindNextModule()
     {
