@@ -23,6 +23,16 @@ public class ProductMover : MonoBehaviour
     private bool isMoving;
     private bool registeredAsActive;
 
+    private bool isGrabbedByPlayer;
+
+    public bool IsGrabbedByPlayer => isGrabbedByPlayer;
+
+    public void SetPlayerGrabbed(bool grabbed)
+    {
+        isGrabbedByPlayer = grabbed;
+    }
+
+
 
     [Header("Packing Detection")]
     [SerializeField] private float packingDetectionInterval = 0.05f;
@@ -103,7 +113,10 @@ nextPackingCheckTime = 0f;
 
     private void Update()
     {
-        if (!isMoving || pathIndex >= path.Count)
+
+        if (isGrabbedByPlayer ||
+            !isMoving ||
+            pathIndex >= path.Count)
             return;
 
         float remainingDistance = speed * Time.deltaTime;
