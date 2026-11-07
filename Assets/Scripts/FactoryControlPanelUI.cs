@@ -14,6 +14,10 @@ public class FactoryControlPanelUI : MonoBehaviour
     [SerializeField] private TMP_Text deliveredText;
     [SerializeField] private TMP_Text activeProductsText;
 
+    [Header("Credits")]
+    [SerializeField] private FactoryCreditManager creditManager;
+    [SerializeField] private TMPro.TMP_Text creditText;
+
     [SerializeField] private Button startButton;
     [SerializeField] private Button stopButton;
 
@@ -33,6 +37,9 @@ public class FactoryControlPanelUI : MonoBehaviour
 
         if (resetButton != null)
             resetButton.onClick.AddListener(controller.ResetFactory);
+
+        if (creditManager == null)
+            creditManager = GetComponentInParent<FactoryCreditManager>();
     }
 
     private void Update()
@@ -71,6 +78,17 @@ public class FactoryControlPanelUI : MonoBehaviour
 
         if (stopButton != null)
             stopButton.interactable = running;
+
+        RefreshCreditText();
+    }
+
+    private void RefreshCreditText()
+    {
+        if (creditManager == null || creditText == null)
+            return;
+
+        creditText.text =
+            $"CREDITS: {creditManager.currentCredits}";
     }
 
     private void OnStartPressed()

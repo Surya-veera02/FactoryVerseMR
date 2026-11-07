@@ -80,6 +80,13 @@ public class FactoryDifficultyManager : MonoBehaviour
     public void ResetDifficulty()
     {
         CurrentLevel = 1;
+
+        Debug.Log(
+            "[Difficulty] Reset to Level 1. " +
+            "Defect probability: 20%. " +
+            "Wrong rejection penalty: 0 CR."
+        );
+
         OnLevelChanged?.Invoke(CurrentLevel);
     }
 }

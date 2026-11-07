@@ -191,6 +191,18 @@ public class FactoryLayoutReset : MonoBehaviour
         connections.RebuildConnections();
         controller.ValidateRoute();
 
+        // Restore the starting credits after all equipment refunds.
+        if (creditManager != null)
+        {
+            creditManager.ResetCredits();
+        }
+
+        // Restore Level 1 after resetting credits.
+        if (difficultyManager != null)
+        {
+            difficultyManager.ResetDifficulty();
+        }
+
         // 9. Restore the starting credit balance.
         if (creditManager != null)
         {
