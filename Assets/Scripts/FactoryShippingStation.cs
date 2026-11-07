@@ -20,12 +20,37 @@ public class FactoryShippingStation : MonoBehaviour
     public int TargetDeliveries => targetDeliveries;
     public bool ObjectiveCompleted => objectiveCompleted;
 
+    [Header("Credit Feedback")]
+    [SerializeField]
+    private FloatingCreditFeedback feedbackPrefab;
+
+    [SerializeField]
+    private Transform feedbackSpawnPoint;
+
     private void Awake()
     {
         if (creditManager == null)
             creditManager =
                 GetComponentInParent<FactoryCreditManager>();
     }
+
+
+    private void ShowCreditFeedback(int amount)
+    {
+        if (feedbackPrefab == null ||
+            feedbackSpawnPoint == null)
+            return;
+
+        FloatingCreditFeedback feedback =
+            Instantiate(
+                feedbackPrefab,
+                feedbackSpawnPoint.position,
+                Quaternion.identity
+            );
+
+        feedback.Show(amount);
+    }
+
 
     public void ReceiveProduct(GameObject product)
     {
@@ -65,6 +90,10 @@ public class FactoryShippingStation : MonoBehaviour
                     penalty,
                     creditManager.currentCredits
                 );
+                if (amountToDeduct > 0)
+                {
+                    ShowCreditFeedback(-amountToDeduct);
+                }
 
                 if (amountToDeduct > 0)
                     creditManager.TrySpend(amountToDeduct);
@@ -85,6 +114,8 @@ public class FactoryShippingStation : MonoBehaviour
                 creditManager.AddCredits(
                     creditManager.successfulDeliveryReward
                 );
+                ShowCreditFeedback(
+    creditManager.successfulDeliveryReward);
             }
 
             Debug.Log(
