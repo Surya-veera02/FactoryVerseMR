@@ -195,21 +195,21 @@ public class FactoryProductionController : MonoBehaviour
         }
 
         // Check whether the delivery objective is complete.
-        if (shipping.ObjectiveCompleted &&
-            currentState != ProductionState.Completed)
-        {
-            source.StopProduction();
+        //if (shipping.ObjectiveCompleted &&
+        //    currentState != ProductionState.Completed)
+        //{
+        //    source.StopProduction();
 
-            currentState = ProductionState.Completed;
+        //    currentState = ProductionState.Completed;
 
-            SetConveyorsLocked(false);
+        //    SetConveyorsLocked(false);
 
-            Debug.Log(
-                "[Factory] Production objective completed!"
-            );
+        //    Debug.Log(
+        //        "[Factory] Production objective completed!"
+        //    );
 
-            return;
-        }
+        //    return;
+        //}
 
         // Finish a graceful stop once all products have left.
         if (currentState == ProductionState.Stopping &&

@@ -130,13 +130,16 @@ public class ProductGrabReturn : MonoBehaviour
 
             if (defective && creditManager != null)
             {
-                creditManager.AddCredits(
-                    creditManager.productionCost
-                );
+                int refund = creditManager.productionCost;
+
+                creditManager.AddCredits(refund);
+
+                if (returnZone != null)
+                    returnZone.ShowCreditFeedback(refund);
 
                 Debug.Log(
                     "[Quality Control] Defective product rejected. " +
-                    $"Refund: +{creditManager.productionCost} CR"
+                    $"Refund: +{refund} CR"
                 );
             }
 
@@ -153,8 +156,12 @@ public class ProductGrabReturn : MonoBehaviour
                         creditManager.currentCredits
                     );
 
-                    if (deduction > 0)
-                        creditManager.TrySpend(deduction);
+                    if (deduction > 0 &&
+                        creditManager.TrySpend(deduction))
+                    {
+                        if (returnZone != null)
+                            returnZone.ShowCreditFeedback(-deduction);
+                    }
                 }
 
                 Debug.LogWarning(

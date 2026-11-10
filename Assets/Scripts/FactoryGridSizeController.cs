@@ -62,6 +62,14 @@ public class FactoryGridSizeController : MonoBehaviour
     public void IncreaseRows() => TryResize(grid.Columns, grid.Rows + 1);
     public void DecreaseRows() => TryResize(grid.Columns, grid.Rows - 1);
 
+    [Header("Perimeter Stations")]
+    [SerializeField]
+    private FactoryPerimeterAnchor shopAnchor;
+    [SerializeField]
+    private FactoryPerimeterAnchor returnBinAnchor;
+    [SerializeField]
+    private FactoryPerimeterAnchor boardGrabHandleAnchor;
+
     private void TryResize(int newColumns, int newRows)
     {
         if (grid == null || production == null ||
@@ -150,13 +158,30 @@ public class FactoryGridSizeController : MonoBehaviour
 
         ResizeSurface();
 
-        // Move surrounding objects to their new board edges.
+        // Find all perimeter anchors without repositioning them.
         FactoryPerimeterAnchor[] anchors =
             GetComponentsInChildren<FactoryPerimeterAnchor>(true);
 
         foreach (FactoryPerimeterAnchor anchor in anchors)
         {
-            anchor.UpdateAnchorPosition();
+            Debug.Log(
+                $"[Anchor Check] Object: {anchor.name}, " +
+                $"Parent: {anchor.transform.parent?.name}"
+            );
+
+            // Reposition perimeter objects after grid resizing.
+
+            if (shopAnchor != null)
+                shopAnchor.UpdateAnchorPosition();
+
+            if (returnBinAnchor != null)
+                returnBinAnchor.UpdateAnchorPosition();
+
+            if (boardGrabHandleAnchor != null)
+                boardGrabHandleAnchor.UpdateAnchorPosition();
+
+            // Temporarily disabled for testing.
+            // anchor.UpdateAnchorPosition();
         }
 
         connections.RebuildConnections();
@@ -165,6 +190,29 @@ public class FactoryGridSizeController : MonoBehaviour
 
         Debug.Log(
             $"[Grid Resize] Success: {newColumns}x{newRows}"
+        );
+    }
+
+    public void RefreshAfterLayoutReset()
+    {
+        // Update the physical board dimensions.
+        ResizeSurface();
+
+        // Reposition perimeter objects.
+        if (shopAnchor != null)
+            shopAnchor.UpdateAnchorPosition();
+
+        if (returnBinAnchor != null)
+            returnBinAnchor.UpdateAnchorPosition();
+
+        if (boardGrabHandleAnchor != null)
+            boardGrabHandleAnchor.UpdateAnchorPosition();
+
+        // Refresh the displayed grid size.
+        UpdateText();
+
+        Debug.Log(
+            "[Grid Resize] Board surface and perimeter objects refreshed."
         );
     }
 

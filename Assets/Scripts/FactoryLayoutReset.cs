@@ -26,6 +26,13 @@ public class FactoryLayoutReset : MonoBehaviour
     [SerializeField] private int defaultColumns = 4;
     [SerializeField] private int defaultRows = 4;
 
+    [Header("Board Handle")]
+    [SerializeField]
+    private FactoryPerimeterAnchor boardGrabHandleAnchor;
+
+    [SerializeField]
+    private FactoryGridSizeController gridSizeController;
+
     [Header("Difficulty")]
     [SerializeField]
     private FactoryDifficultyManager difficultyManager;
@@ -158,6 +165,18 @@ public class FactoryLayoutReset : MonoBehaviour
 
         // 5. Restore the default grid size.
         grid.SetGridSize(defaultColumns, defaultRows);
+
+        // Refresh the physical board, UI and perimeter objects.
+        if (gridSizeController != null)
+        {
+            gridSizeController.RefreshAfterLayoutReset();
+        }
+        else
+        {
+            Debug.LogWarning(
+                "[Layout Reset] Grid Size Controller is not assigned."
+            );
+        }
 
         // 6. Reposition and register fixed stations.
         bool sourcePlaced = placementManager.TrySnap(
