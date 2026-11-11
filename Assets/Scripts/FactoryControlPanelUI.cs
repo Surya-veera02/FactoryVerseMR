@@ -53,8 +53,7 @@ public class FactoryControlPanelUI : MonoBehaviour
 
         if (deliveredText != null)
             deliveredText.text =
-                "DELIVERED: " + shipping.DeliveredCount +
-                "/" + shipping.TargetDeliveries;
+                "DELIVERED: " + shipping.DeliveredCount; //+ "/" + shipping.TargetDeliveries;
 
         if (activeProductsText != null)
             activeProductsText.text =

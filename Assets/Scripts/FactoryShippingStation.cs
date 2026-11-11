@@ -27,13 +27,17 @@ public class FactoryShippingStation : MonoBehaviour
     [SerializeField]
     private Transform feedbackSpawnPoint;
 
+    [Header("Shipping Audio")]
+    [SerializeField] private AudioSource shippingAudio;
+    [SerializeField] private AudioClip correctPackageSound;
+    [SerializeField] private AudioClip wrongPackageSound;
+
     private void Awake()
     {
         if (creditManager == null)
             creditManager =
                 GetComponentInParent<FactoryCreditManager>();
     }
-
 
     private void ShowCreditFeedback(int amount)
     {
@@ -50,7 +54,6 @@ public class FactoryShippingStation : MonoBehaviour
 
         feedback.Show(amount);
     }
-
 
     public void ReceiveProduct(GameObject product)
     {
@@ -80,6 +83,8 @@ public class FactoryShippingStation : MonoBehaviour
         {
             defectiveDeliveredCount++;
 
+            PlayWrongPackageSound();
+
             if (creditManager != null)
             {
                 int penalty =
@@ -108,6 +113,8 @@ public class FactoryShippingStation : MonoBehaviour
         else if (isPacked)
         {
             deliveredCount++;
+
+            PlayCorrectPackageSound();
 
             if (creditManager != null)
             {
@@ -139,6 +146,8 @@ public class FactoryShippingStation : MonoBehaviour
         {
             rejectedCount++;
 
+            PlayWrongPackageSound();
+
             Debug.LogWarning(
                 "[Shipping] UNPACKED PRODUCT REJECTED! " +
                 $"Total rejected: {rejectedCount}"
@@ -154,5 +163,16 @@ public class FactoryShippingStation : MonoBehaviour
         rejectedCount = 0;
         defectiveDeliveredCount = 0;
         objectiveCompleted = false;
+    }
+    private void PlayCorrectPackageSound()
+    {
+        if (shippingAudio != null && correctPackageSound != null)
+            shippingAudio.PlayOneShot(correctPackageSound);
+    }
+
+    private void PlayWrongPackageSound()
+    {
+        if (shippingAudio != null && wrongPackageSound != null)
+            shippingAudio.PlayOneShot(wrongPackageSound);
     }
 }
