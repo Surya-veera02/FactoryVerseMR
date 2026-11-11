@@ -1195,6 +1195,7 @@ GameObject:
   m_Component:
   - component: {fileID: 93753058}
   - component: {fileID: 93753059}
+  - component: {fileID: 93753060}
   m_Layer: 0
   m_Name: FactoryReturnBin
   m_TagString: Untagged
@@ -1238,6 +1239,22 @@ MonoBehaviour:
   alongEdgeOffset: 0
   heightOffset: 0
   updateContinuously: 0
+--- !u!114 &93753060
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 93753057}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74405145c2df20b4bb6d1b7798dd5ef2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FactoryMachineJerkAnimation
+  movingPart: {fileID: 1332334953}
+  duration: 0.35
+  sidewaysDistance: 0.012
+  compression: 0.08
 --- !u!1 &95476583
 GameObject:
   m_ObjectHideFlags: 0
@@ -2864,6 +2881,7 @@ GameObject:
   m_Component:
   - component: {fileID: 479585648}
   - component: {fileID: 479585649}
+  - component: {fileID: 479585650}
   m_Layer: 0
   m_Name: SHOPStation
   m_TagString: Untagged
@@ -2908,6 +2926,22 @@ MonoBehaviour:
   alongEdgeOffset: 0.2
   heightOffset: 0
   updateContinuously: 1
+--- !u!114 &479585650
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 479585647}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74405145c2df20b4bb6d1b7798dd5ef2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FactoryMachineJerkAnimation
+  movingPart: {fileID: 479585648}
+  duration: 0.4
+  sidewaysDistance: 0.03
+  compression: -0.08
 --- !u!1 &496368398
 GameObject:
   m_ObjectHideFlags: 0
@@ -2933,7 +2967,7 @@ Transform:
   m_GameObject: {fileID: 496368398}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.085, z: 0}
+  m_LocalPosition: {x: 0, y: 0.1414, z: -0.0668}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8171,6 +8205,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FactoryShopToggle
   shopPanel: {fileID: 2058160585}
+  shopAnimation: {fileID: 479585650}
 --- !u!114 &1446443590
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12381,6 +12416,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FactoryReturnZone
   feedbackPrefab: {fileID: 7956626244559720103, guid: 37f06520c56b77b458163d9b5925e70e, type: 3}
   feedbackSpawnPoint: {fileID: 496368399}
+  binAnimation: {fileID: 93753060}
 --- !u!1 &2114851108
 GameObject:
   m_ObjectHideFlags: 0

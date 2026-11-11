@@ -214,6 +214,9 @@ public class ConveyorGrabSnap : MonoBehaviour
 
                     purchase.TryRefund(creditManager);
 
+                    // Play bin animation.
+                    returnZone.PlayReturnAnimation();
+
                     Debug.Log(
                         $"[Return Bin] Conveyor returned: {name}"
                     );

@@ -98,6 +98,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f29f6c9c5cdc57b41a877263bc6fca7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PackingMachineTrigger
+  machineAnimation: {fileID: 8935588794348264794}
 --- !u!1 &5623731792949227671
 GameObject:
   m_ObjectHideFlags: 0
@@ -108,6 +109,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4529855821151652883}
   - component: {fileID: 7886207649448312482}
+  - component: {fileID: 8935588794348264794}
   - component: {fileID: 6260824276053634586}
   - component: {fileID: 1901489048510925388}
   - component: {fileID: 5419340705420694731}
@@ -156,6 +158,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.1, y: 0.1, z: 0.1}
   m_Center: {x: 0, y: 0.05, z: 0}
+--- !u!114 &8935588794348264794
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5623731792949227671}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74405145c2df20b4bb6d1b7798dd5ef2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FactoryMachineJerkAnimation
+  movingPart: {fileID: 2268829133402871962}
+  duration: 0.35
+  sidewaysDistance: 0.03
+  compression: 0.08
 --- !u!54 &6260824276053634586
 Rigidbody:
   m_ObjectHideFlags: 0

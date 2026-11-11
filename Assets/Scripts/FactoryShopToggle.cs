@@ -9,13 +9,17 @@ public class FactoryShopToggle : MonoBehaviour
     [Header("Shop UI")]
     [SerializeField] private GameObject shopPanel;
 
+    [Header("Animation")]
+    [SerializeField]
+    private FactoryMachineJerkAnimation shopAnimation;
+
     private XRSimpleInteractable interactable;
 
     private void Awake()
     {
         interactable = GetComponent<XRSimpleInteractable>();
 
-        // Hide only the shop's visual content.
+        // Hide shop UI initially.
         if (shopPanel != null)
             shopPanel.SetActive(false);
     }
@@ -35,6 +39,15 @@ public class FactoryShopToggle : MonoBehaviour
         if (shopPanel == null)
             return;
 
-        shopPanel.SetActive(!shopPanel.activeSelf);
+        bool openingShop = !shopPanel.activeSelf;
+
+        // Toggle shop visibility.
+        shopPanel.SetActive(openingShop);
+
+        // Animate only when opening the shop.
+        if (openingShop && shopAnimation != null)
+        {
+            shopAnimation.PlayAnimation();
+        }
     }
 }

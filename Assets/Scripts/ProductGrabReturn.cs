@@ -125,6 +125,7 @@ public class ProductGrabReturn : MonoBehaviour
 
         if (insideReturnBin)
         {
+            returnZone.PlayReturnAnimation();
             bool defective =
                 quality != null && quality.IsDefective;
 

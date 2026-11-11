@@ -4,6 +4,9 @@ using UnityEngine;
 [RequireComponent(typeof(BoxCollider))]
 public class PackingMachineTrigger : MonoBehaviour
 {
+
+    [SerializeField]
+    private FactoryMachineJerkAnimation machineAnimation;
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("Product"))
@@ -24,6 +27,8 @@ public class PackingMachineTrigger : MonoBehaviour
             return;
 
         packaging.Pack();
+        if (machineAnimation != null)
+            machineAnimation.PlayAnimation();
 
         Debug.Log(
             "[Packing Machine] Product successfully packed!"

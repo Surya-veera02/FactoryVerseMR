@@ -209,6 +209,9 @@ public class PackingMachinePlacement : MonoBehaviour
                 {
                     if (purchase.TryRefund(creditManager))
                     {
+                        // Play bin animation.
+                        returnZone.PlayReturnAnimation();
+
                         FactoryBuildShopUI shopUI =
                             FindFirstObjectByType<FactoryBuildShopUI>();
 

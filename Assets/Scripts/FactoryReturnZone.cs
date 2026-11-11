@@ -13,6 +13,15 @@ public class FactoryReturnZone : MonoBehaviour
     private Transform feedbackSpawnPoint;
     private BoxCollider zoneCollider;
 
+    [SerializeField]
+    private FactoryMachineJerkAnimation binAnimation;
+
+    public void PlayReturnAnimation()
+    {
+        if (binAnimation != null)
+            binAnimation.PlayAnimation();
+    }
+
     private void Awake()
     {
         zoneCollider = GetComponent<BoxCollider>();
