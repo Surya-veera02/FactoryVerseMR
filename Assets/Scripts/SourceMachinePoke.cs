@@ -11,6 +11,9 @@ public class SourceMachinePoke : MonoBehaviour
     private FactorySourceStation sourceStation;
 
     private XRSimpleInteractable interactable;
+    [Header("Audio")]
+    [SerializeField]
+    private FactorySoundEffect productionSound;
 
     private void Awake()
     {
@@ -60,8 +63,11 @@ public class SourceMachinePoke : MonoBehaviour
                 "[Source Poke] Product successfully spawned!"
             );
 
-            // Future milestone:
-            // Play machine jerk animation.
+            if (productionSound != null)
+                productionSound.PlaySound();
         }
+
+        // Future milestone:
+        // Play machine jerk animation.
     }
 }

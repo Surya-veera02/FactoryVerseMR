@@ -12,6 +12,7 @@ public class FactoryShopToggle : MonoBehaviour
     [Header("Animation")]
     [SerializeField]
     private FactoryMachineJerkAnimation shopAnimation;
+    [SerializeField] private FactorySoundEffect shopSound;
 
     private XRSimpleInteractable interactable;
 
@@ -45,9 +46,13 @@ public class FactoryShopToggle : MonoBehaviour
         shopPanel.SetActive(openingShop);
 
         // Animate only when opening the shop.
-        if (openingShop && shopAnimation != null)
+        if (openingShop)
         {
-            shopAnimation.PlayAnimation();
+            if (shopAnimation != null)
+                shopAnimation.PlayAnimation();
+
+            if (shopSound != null)
+                shopSound.PlaySound();
         }
     }
 }

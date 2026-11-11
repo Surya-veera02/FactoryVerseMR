@@ -7,6 +7,7 @@ public class PackingMachineTrigger : MonoBehaviour
 
     [SerializeField]
     private FactoryMachineJerkAnimation machineAnimation;
+    [SerializeField] private FactorySoundEffect packingSound;
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("Product"))
@@ -27,6 +28,8 @@ public class PackingMachineTrigger : MonoBehaviour
             return;
 
         packaging.Pack();
+        if (packingSound != null)
+            packingSound.PlaySound();
         if (machineAnimation != null)
             machineAnimation.PlayAnimation();
 

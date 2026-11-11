@@ -15,11 +15,15 @@ public class FactoryReturnZone : MonoBehaviour
 
     [SerializeField]
     private FactoryMachineJerkAnimation binAnimation;
+    [SerializeField] private FactorySoundEffect binSound;
 
     public void PlayReturnAnimation()
     {
         if (binAnimation != null)
             binAnimation.PlayAnimation();
+
+        if (binSound != null)
+            binSound.PlaySound();
     }
 
     private void Awake()
