@@ -20691,6 +20691,9 @@ MonoBehaviour:
   deliveredValue: {fileID: 1312700116}
   defectiveValue: {fileID: 1460152179}
   unpackedValue: {fileID: 1721788440}
+  difficultyManager: {fileID: 1969260302}
+  levelText: {fileID: 1394636440}
+  defectRateText: {fileID: 222197270}
 --- !u!1 &1969260291
 GameObject:
   m_ObjectHideFlags: 0

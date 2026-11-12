@@ -22,6 +22,17 @@ public class FactoryGameplayHUD : MonoBehaviour
     private int previousDefective = -1;
     private int previousUnpacked = -1;
 
+    [Header("Difficulty References")]
+    [SerializeField]
+    private FactoryDifficultyManager difficultyManager;
+
+    [Header("Difficulty UI")]
+    [SerializeField]
+    private TMP_Text levelText;
+
+    [SerializeField]
+    private TMP_Text defectRateText;
+
     private void Awake()
     {
         if (shippingStation == null)
@@ -29,11 +40,18 @@ public class FactoryGameplayHUD : MonoBehaviour
             shippingStation =
                 FindFirstObjectByType<FactoryShippingStation>();
         }
+
+        if (difficultyManager == null)
+        {
+            difficultyManager =
+                FindFirstObjectByType<FactoryDifficultyManager>();
+        }
     }
 
     private void Start()
     {
         RefreshHUD();
+        RefreshDifficultyHUD();
     }
 
     private void Update()
@@ -67,5 +85,43 @@ public class FactoryGameplayHUD : MonoBehaviour
 
         if (unpackedValue != null)
             unpackedValue.text = previousUnpacked.ToString();
+    }
+
+    private void OnEnable()
+    {
+        if (difficultyManager != null)
+            difficultyManager.OnLevelChanged += OnDifficultyChanged;
+    }
+
+    private void OnDisable()
+    {
+        if (difficultyManager != null)
+            difficultyManager.OnLevelChanged -= OnDifficultyChanged;
+    }
+
+    private void RefreshDifficultyHUD()
+    {
+        if (difficultyManager == null)
+            return;
+
+        if (levelText != null)
+        {
+            levelText.text =
+                $"LEVEL {difficultyManager.CurrentLevel:00}";
+        }
+
+        if (defectRateText != null)
+        {
+            float percentage =
+                difficultyManager.CurrentDefectProbability * 100f;
+
+            defectRateText.text =
+                $"DEFECT RATE: {percentage:0}%";
+        }
+    }
+
+    private void OnDifficultyChanged(int newLevel)
+    {
+        RefreshDifficultyHUD();
     }
 }
