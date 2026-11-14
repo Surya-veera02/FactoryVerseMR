@@ -6,7 +6,7 @@ public class FactoryReturnHome : MonoBehaviour
 {
     [Header("Scene Settings")]
     [SerializeField]
-    private string homeSceneName = "FactoryVerse_Home";
+    private string homeSceneName = "FactoryVerse_Main";
 
     [Header("Confirmation UI")]
     [SerializeField]
