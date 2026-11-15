@@ -17,6 +17,11 @@ public class FactoryShippingStation : MonoBehaviour
     public int DeliveredCount => deliveredCount;
     public int RejectedCount => rejectedCount;
     public int DefectiveDeliveredCount => defectiveDeliveredCount;
+
+    // Total products reaching Shipping, regardless of outcome.
+    public int TotalReachedShipping =>
+        deliveredCount + defectiveDeliveredCount + rejectedCount;
+
     public int TargetDeliveries => targetDeliveries;
     public bool ObjectiveCompleted => objectiveCompleted;
 
@@ -78,8 +83,20 @@ public class FactoryShippingStation : MonoBehaviour
         if (mover != null)
             mover.UnregisterProduct();
 
-        // 1. Defective products take priority.
-        if (isDefective)
+        // 1. Unpacked products take priority.
+        if (!isPacked)
+        {
+            rejectedCount++;
+
+            PlayWrongPackageSound();
+
+            Debug.LogWarning(
+                "[Shipping] UNPACKED PRODUCT REJECTED! " +
+                $"Total unpacked: {rejectedCount}"
+            );
+        }
+        // 2. Defective packed products.
+        else if (isDefective)
         {
             defectiveDeliveredCount++;
 
@@ -90,27 +107,25 @@ public class FactoryShippingStation : MonoBehaviour
                 int penalty =
                     creditManager.defectiveDeliveryPenalty;
 
-                // Deduct penalty without making balance negative.
                 int amountToDeduct = Mathf.Min(
                     penalty,
                     creditManager.currentCredits
                 );
+
                 if (amountToDeduct > 0)
                 {
                     ShowCreditFeedback(-amountToDeduct);
-                }
-
-                if (amountToDeduct > 0)
                     creditManager.TrySpend(amountToDeduct);
+                }
             }
 
             Debug.LogWarning(
-                "[Shipping] DEFECTIVE PRODUCT ARRIVED! " +
+                "[Shipping] DEFECTIVE BOX ARRIVED! " +
                 $"Total defective: {defectiveDeliveredCount}"
             );
         }
-        // 2. Accept normal packed products.
-        else if (isPacked)
+        // 3. Successfully packed products.
+        else
         {
             deliveredCount++;
 
@@ -118,17 +133,16 @@ public class FactoryShippingStation : MonoBehaviour
 
             if (creditManager != null)
             {
-                creditManager.AddCredits(
-                    creditManager.successfulDeliveryReward
-                );
-                ShowCreditFeedback(
-    creditManager.successfulDeliveryReward);
+                int reward =
+                    creditManager.successfulDeliveryReward;
+
+                creditManager.AddCredits(reward);
+                ShowCreditFeedback(reward);
             }
 
             Debug.Log(
-                $"[Shipping] GOOD DELIVERY! " +
-                $"{deliveredCount}/{targetDeliveries}. " +
-                $"Reward: +20 CR"
+                "[Shipping] GOOD DELIVERY! " +
+                $"{deliveredCount}/{targetDeliveries}."
             );
 
             if (!objectiveCompleted &&
@@ -141,18 +155,6 @@ public class FactoryShippingStation : MonoBehaviour
                 );
             }
         }
-        // 3. Reject unpacked products.
-        else
-        {
-            rejectedCount++;
-
-            PlayWrongPackageSound();
-
-            Debug.LogWarning(
-                "[Shipping] UNPACKED PRODUCT REJECTED! " +
-                $"Total rejected: {rejectedCount}"
-            );
-        }
 
         Destroy(product);
     }
@@ -164,6 +166,7 @@ public class FactoryShippingStation : MonoBehaviour
         defectiveDeliveredCount = 0;
         objectiveCompleted = false;
     }
+
     private void PlayCorrectPackageSound()
     {
         if (shippingAudio != null && correctPackageSound != null)
