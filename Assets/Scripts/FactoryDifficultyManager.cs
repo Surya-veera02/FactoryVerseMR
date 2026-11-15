@@ -8,15 +8,22 @@ public class FactoryDifficultyManager : MonoBehaviour
     [SerializeField]
     private FactoryCreditManager creditManager;
 
-    [Header("Difficulty Settings")]
+    [Header("Level Thresholds")]
     [SerializeField] private int level2Threshold = 600;
+    [SerializeField] private int level3Threshold = 750;
 
+    [Header("Defect Probabilities")]
     [SerializeField, Range(0f, 1f)]
     private float level1DefectProbability = 0.2f;
 
     [SerializeField, Range(0f, 1f)]
     private float level2DefectProbability = 0.4f;
 
+    [Header("Level 3 Packing Failures")]
+    [SerializeField, Range(0f, 1f)]
+    private float level3UnpackedProbability = 0.2f;
+
+    [Header("Penalties")]
     [SerializeField]
     private int level2WrongRejectionPenalty = 10;
 
@@ -26,6 +33,11 @@ public class FactoryDifficultyManager : MonoBehaviour
         CurrentLevel == 1
             ? level1DefectProbability
             : level2DefectProbability;
+
+    public float CurrentUnpackedProbability =>
+        CurrentLevel >= 3
+            ? level3UnpackedProbability
+            : 0f;
 
     public int WrongRejectionPenalty =>
         CurrentLevel == 1
@@ -61,20 +73,27 @@ public class FactoryDifficultyManager : MonoBehaviour
 
     private void CheckLevel(int credits)
     {
-        if (CurrentLevel >= 2)
+        int targetLevel = CurrentLevel;
+
+        if (credits >= level3Threshold)
+            targetLevel = 3;
+        else if (credits >= level2Threshold)
+            targetLevel = Mathf.Max(targetLevel, 2);
+
+        if (targetLevel <= CurrentLevel)
             return;
 
-        if (credits < level2Threshold)
-            return;
+        // Trigger each newly unlocked level.
+        while (CurrentLevel < targetLevel)
+        {
+            CurrentLevel++;
 
-        CurrentLevel = 2;
+            Debug.Log(
+                $"[Difficulty] LEVEL {CurrentLevel} UNLOCKED!"
+            );
 
-        Debug.Log(
-            "[Difficulty] LEVEL 2 UNLOCKED! " +
-            "Defect probability increased to 40%."
-        );
-
-        OnLevelChanged?.Invoke(CurrentLevel);
+            OnLevelChanged?.Invoke(CurrentLevel);
+        }
     }
 
     public void ResetDifficulty()
@@ -82,9 +101,7 @@ public class FactoryDifficultyManager : MonoBehaviour
         CurrentLevel = 1;
 
         Debug.Log(
-            "[Difficulty] Reset to Level 1. " +
-            "Defect probability: 20%. " +
-            "Wrong rejection penalty: 0 CR."
+            "[Difficulty] Reset to Level 1."
         );
 
         OnLevelChanged?.Invoke(CurrentLevel);

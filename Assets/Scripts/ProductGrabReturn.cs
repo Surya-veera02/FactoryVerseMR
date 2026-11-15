@@ -18,6 +18,7 @@ public class ProductGrabReturn : MonoBehaviour
     private Rigidbody rb;
     private ProductMover mover;
     private ProductQuality quality;
+    private ProductPackaging packaging;
 
     private Transform handAttach;
     private Vector3 grabOffset;
@@ -37,6 +38,8 @@ public class ProductGrabReturn : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         mover = GetComponent<ProductMover>();
         quality = GetComponent<ProductQuality>();
+
+        packaging = GetComponent<ProductPackaging>();
 
         if (returnZone == null)
             returnZone = FindFirstObjectByType<FactoryReturnZone>();
@@ -123,27 +126,46 @@ public class ProductGrabReturn : MonoBehaviour
             returnZone != null &&
             returnZone.ContainsPoint(transform.position);
 
+
         if (insideReturnBin)
         {
             returnZone.PlayReturnAnimation();
-            bool defective =
-                quality != null && quality.IsDefective;
 
-            if (defective && creditManager != null)
+            // Identify the product's actual packing outcome.
+            bool unpackedFailure =
+                packaging != null &&
+                packaging.IsUnpackedFailure;
+
+            bool defectiveBox =
+                packaging != null &&
+                packaging.IsPacked &&
+                quality != null &&
+                quality.IsDefective;
+
+            bool correctRejection =
+                unpackedFailure || defectiveBox;
+
+            if (correctRejection)
             {
-                int refund = creditManager.productionCost;
+                int refund = creditManager != null
+                    ? creditManager.productionCost
+                    : 0;
 
-                creditManager.AddCredits(refund);
-
-                if (returnZone != null)
+                if (creditManager != null && refund > 0)
+                {
+                    creditManager.AddCredits(refund);
                     returnZone.ShowCreditFeedback(refund);
+                }
+
+                string reason = unpackedFailure
+                    ? "UNPACKED PRODUCT"
+                    : "DEFECTIVE BOX";
 
                 Debug.Log(
-                    "[Quality Control] Defective product rejected. " +
+                    $"[Quality Control] {reason} returned. " +
                     $"Refund: +{refund} CR"
                 );
             }
-
             else
             {
                 int penalty = difficultyManager != null
@@ -160,17 +182,15 @@ public class ProductGrabReturn : MonoBehaviour
                     if (deduction > 0 &&
                         creditManager.TrySpend(deduction))
                     {
-                        if (returnZone != null)
-                            returnZone.ShowCreditFeedback(-deduction);
+                        returnZone.ShowCreditFeedback(-deduction);
                     }
                 }
 
                 Debug.LogWarning(
-                    "[Quality Control] Normal product discarded! " +
+                    "[Quality Control] Incorrect product rejected! " +
                     $"Penalty: -{penalty} CR"
                 );
             }
-
 
             mover.UnregisterProduct();
 
@@ -178,6 +198,7 @@ public class ProductGrabReturn : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+
 
         // Invalid rejection: return to the exact conveyor
         // position where the product was picked up.

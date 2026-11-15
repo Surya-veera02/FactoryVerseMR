@@ -8,27 +8,76 @@ public class ProductPackaging : MonoBehaviour
     [SerializeField] private GameObject packedBoxModel;
     [SerializeField] private GameObject defectiveBoxModel;
 
+    [Header("Difficulty")]
+    [SerializeField]
+    private FactoryDifficultyManager difficultyManager;
+
     private ProductQuality productQuality;
 
     public bool IsPacked { get; private set; }
+
+    public bool IsUnpackedFailure { get; private set; }
+
+    private bool processingComplete;
 
     private void Awake()
     {
         productQuality = GetComponent<ProductQuality>();
 
+        if (difficultyManager == null)
+        {
+            difficultyManager =
+                FindFirstObjectByType<FactoryDifficultyManager>();
+        }
+
         SetPackedState(false);
+        processingComplete = false;
+        IsUnpackedFailure = false;
     }
 
     public void Pack()
     {
-        if (IsPacked)
+        // Prevent repeated packing attempts,
+        // including when packing fails.
+        if (processingComplete)
             return;
 
+        processingComplete = true;
+
+        float unpackedChance =
+            difficultyManager != null
+                ? difficultyManager.CurrentUnpackedProbability
+                : 0f;
+
+        // Level 3 packing failure
+        if (Random.value < unpackedChance)
+        {
+            IsPacked = false;
+            IsUnpackedFailure = true;
+
+            if (unpackedModel != null)
+                unpackedModel.SetActive(true);
+
+            if (packedBoxModel != null)
+                packedBoxModel.SetActive(false);
+
+            if (defectiveBoxModel != null)
+                defectiveBoxModel.SetActive(false);
+
+            Debug.Log(
+                $"[Packaging] {name} left UNPACKED."
+            );
+
+            return;
+        }
+
+        // Existing packaging behaviour
         bool isDefective =
             productQuality != null &&
             productQuality.IsDefective;
 
         IsPacked = true;
+        IsUnpackedFailure = false;
 
         if (unpackedModel != null)
             unpackedModel.SetActive(false);
@@ -41,7 +90,9 @@ public class ProductPackaging : MonoBehaviour
 
         Debug.Log(
             $"[Packaging] {name} packed as " +
-            (isDefective ? "DEFECTIVE BOX" : "NORMAL BOX")
+            (isDefective
+                ? "DEFECTIVE BOX"
+                : "NORMAL BOX")
         );
     }
 

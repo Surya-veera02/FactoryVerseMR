@@ -99,6 +99,7 @@ public class FactoryGameplayHUD : MonoBehaviour
             difficultyManager.OnLevelChanged -= OnDifficultyChanged;
     }
 
+
     private void RefreshDifficultyHUD()
     {
         if (difficultyManager == null)
@@ -112,13 +113,26 @@ public class FactoryGameplayHUD : MonoBehaviour
 
         if (defectRateText != null)
         {
-            float percentage =
+            float defectPercentage =
                 difficultyManager.CurrentDefectProbability * 100f;
 
-            defectRateText.text =
-                $"DEFECT RATE: {percentage:0}%";
+            if (difficultyManager.CurrentLevel >= 3)
+            {
+                float unpackedPercentage =
+                    difficultyManager.CurrentUnpackedProbability * 100f;
+
+                defectRateText.text =
+                    $"DEFECT: {defectPercentage:0}%  |  " +
+                    $"UNPACKED: {unpackedPercentage:0}%";
+            }
+            else
+            {
+                defectRateText.text =
+                    $"DEFECT RATE: {defectPercentage:0}%";
+            }
         }
     }
+
 
     private void OnDifficultyChanged(int newLevel)
     {
