@@ -9,6 +9,9 @@ public class FactoryShippingStation : MonoBehaviour
     [Header("Credit Economy")]
     [SerializeField] private FactoryCreditManager creditManager;
 
+    private readonly System.Collections.Generic.HashSet<int>
+    receivedProductIds = new();
+
     private int deliveredCount;
     private int rejectedCount;
     private int defectiveDeliveredCount;
@@ -63,6 +66,11 @@ public class FactoryShippingStation : MonoBehaviour
     public void ReceiveProduct(GameObject product)
     {
         if (product == null)
+            return;
+
+        int productId = product.GetInstanceID();
+
+        if (!receivedProductIds.Add(productId))
             return;
 
         ProductPackaging packaging =
@@ -165,6 +173,7 @@ public class FactoryShippingStation : MonoBehaviour
         rejectedCount = 0;
         defectiveDeliveredCount = 0;
         objectiveCompleted = false;
+        receivedProductIds.Clear();
     }
 
     private void PlayCorrectPackageSound()
