@@ -4,7 +4,7 @@ using UnityEngine;
 public class FactoryShippingStation : MonoBehaviour
 {
     [Header("Objective")]
-    [SerializeField] private int targetDeliveries = 10;
+    //[SerializeField] private int targetDeliveries = 10;
 
     [Header("Credit Economy")]
     [SerializeField] private FactoryCreditManager creditManager;
@@ -25,7 +25,7 @@ public class FactoryShippingStation : MonoBehaviour
     public int TotalReachedShipping =>
         deliveredCount + defectiveDeliveredCount + rejectedCount;
 
-    public int TargetDeliveries => targetDeliveries;
+    //public int TargetDeliveries => targetDeliveries;
     public bool ObjectiveCompleted => objectiveCompleted;
 
     [Header("Credit Feedback")]
@@ -148,20 +148,20 @@ public class FactoryShippingStation : MonoBehaviour
                 ShowCreditFeedback(reward);
             }
 
-            Debug.Log(
-                "[Shipping] GOOD DELIVERY! " +
-                $"{deliveredCount}/{targetDeliveries}."
-            );
+            //Debug.Log(
+            //    "[Shipping] GOOD DELIVERY! " +
+            //    $"{deliveredCount}/{targetDeliveries}."
+            //);
 
-            if (!objectiveCompleted &&
-                deliveredCount >= targetDeliveries)
-            {
-                objectiveCompleted = true;
+            //if (!objectiveCompleted &&
+            //    deliveredCount >= targetDeliveries)
+            //{
+            //    objectiveCompleted = true;
 
-                Debug.Log(
-                    "[FactoryVerse] OBJECTIVE COMPLETE!"
-                );
-            }
+            //    Debug.Log(
+            //        "[FactoryVerse] OBJECTIVE COMPLETE!"
+            //    );
+            //}
         }
 
         Destroy(product);

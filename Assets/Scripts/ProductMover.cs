@@ -230,15 +230,46 @@ nextPackingCheckTime = 0f;
         }
     }
 
+
     private void FindNextModule()
     {
+        // Shipping must always be the final destination.
+        FactoryShippingStation shipping = null;
+
+        if (currentModule != null)
+        {
+            shipping =
+                currentModule.GetComponent<FactoryShippingStation>();
+
+            if (shipping == null)
+            {
+                shipping =
+                    currentModule.GetComponentInParent<FactoryShippingStation>();
+            }
+        }
+
+        if (shipping != null)
+        {
+            isMoving = false;
+            targetModule = null;
+
+            Debug.Log(
+                "[ProductMover] Product reached Shipping Station."
+            );
+
+            // Existing method handles:
+            // Counters, credits, audio, unregistering and destruction.
+            shipping.ReceiveProduct(gameObject);
+
+            return;
+        }
+
         ConveyorModule next =
             connectionManager.GetNextModule(currentModule);
 
         ConveyorModule corner = null;
 
-        // Look ahead through a corner so we can
-        // build the complete entry-to-exit curve.
+        // Preserve existing smooth corner movement.
         if (smoothCorners && next != null && next.IsCorner)
         {
             ConveyorModule afterCorner =
@@ -259,19 +290,9 @@ nextPackingCheckTime = 0f;
         {
             isMoving = false;
 
-            FactoryShippingStation shipping =
-                currentModule.GetComponent<FactoryShippingStation>();
-
-            if (shipping != null)
-            {
-                shipping.ReceiveProduct(gameObject);
-            }
-            else
-            {
-                Debug.Log(
-                    $"Product stopped at {currentModule.name}"
-                );
-            }
+            Debug.Log(
+                $"Product stopped at {currentModule.name}"
+            );
 
             return;
         }
@@ -291,6 +312,7 @@ nextPackingCheckTime = 0f;
             $"-> {targetModule.name}"
         );
     }
+
 
 
 

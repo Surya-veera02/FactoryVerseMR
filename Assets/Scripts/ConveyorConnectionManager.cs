@@ -38,6 +38,18 @@ public class ConveyorConnectionManager : MonoBehaviour
                 !module.CurrentCell.HasValue)
                 continue;
 
+            // Shipping is a terminal endpoint.
+            // Never create an outgoing connection from Shipping.
+            FactoryShippingStation shipping =
+                module.GetComponent<FactoryShippingStation>();
+
+            if (shipping == null)
+                shipping =
+                    module.GetComponentInParent<FactoryShippingStation>();
+
+            if (shipping != null)
+                continue;
+
             Vector2Int targetCell =
                 module.CurrentCell.Value +
                 module.OutputDirection;
